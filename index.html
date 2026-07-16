@@ -474,6 +474,16 @@ tr[data-ink]::after{ background: var(--row-ink) !important; }   /* الشطب ي
 }
 .stamp:hover{ outline:1px dashed currentColor; outline-offset:4px; }
 .stamp.selected{ outline:2px dashed currentColor; outline-offset:5px; }
+
+/* الختم الرئاسي — خاتمٌ رسميّ بحلقةٍ مزدوجة وسطرين، أرحب من أختام الحالة */
+.stamp.seal{
+  border:3px double currentColor; border-radius:50%/44%;
+  padding:12px 26px; line-height:1.5; font-size:15px; text-align:center; white-space:normal;
+}
+.stamp.seal::before{ content:""; position:absolute; inset:4px; border:1px solid currentColor;
+  border-radius:inherit; opacity:.55; pointer-events:none; }
+.stamp.seal br{ line-height:0; }
+
 body.arming .leaf{ cursor:crosshair; }
 body.arming .leaf::after{ pointer-events:none; }
 
@@ -1178,12 +1188,14 @@ body[data-panel] .panel-back{ display:flex; }
     <button type="button" class="stamp-btn" style="--c:#326B42" data-t="بالخدمة" data-c="#006130">بالخدمة</button>
     <button type="button" class="stamp-btn" style="--c:#3C82B4" data-t="إجازة"   data-c="#0E85FF">إجازة</button>
     <button type="button" class="stamp-btn" style="--c:#E06A28" data-t="متغيّب"  data-c="#FB5F00">متغيّب</button>
+    <!-- الختم الرئاسي — سطران، بصبغةٍ رسمية، ونصّه يُضبَط في JS ليحمل سطراً جديداً -->
+    <button type="button" class="stamp-btn seal-btn" style="--c:#7A2230" data-c="#8A1C2C">ختم رئاسي</button>
   </div>
 
   <div class="side-free side-write">
     <input type="text" id="stamptext" placeholder="ختم آخر…" autocomplete="off">
     <input type="color" id="stampcolour" value="#5C4A63" title="صبغة الختم">
-    <button type="button" class="btn-strike" id="armstamp">اضربه</button>
+    <button type="button" class="btn-strike" id="armstamp">ختم</button>
   </div>
 
   <div class="side-size side-write">
@@ -2010,8 +2022,14 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     if(!canWrite()) return;
     pageStamps.forEach(function(st){
       var el = document.createElement("span");
-      el.className = "stamp" + (st.id === selectedStampId ? " selected" : "");
-      el.textContent = st.t;
+      var multi = String(st.t).indexOf("\n") >= 0;   // الختم الرئاسي: سطران = خاتم رسميّ
+      el.className = "stamp" + (st.id === selectedStampId ? " selected" : "") + (multi ? " seal" : "");
+      if(multi){
+        String(st.t).split("\n").forEach(function(line, i){
+          if(i) el.appendChild(document.createElement("br"));
+          el.appendChild(document.createTextNode(line));
+        });
+      }else{ el.textContent = st.t; }
       el.style.left = (st.x * 100) + "%"; el.style.top = (st.y * 100) + "%";
       el.style.setProperty("--rot", st.rot + "deg");
       el.style.setProperty("--stamp-scale", st.sz || 1);
@@ -2072,6 +2090,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     held = { t:t, c:c }; arming = true;
     document.body.classList.add("arming"); btn.classList.add("armed");
   }
+  // الختم الرئاسي: سطران. نضبط نصّه في JS ليحمل سطراً جديداً (يصعب في سمة HTML)
+  var sealBtn = document.querySelector(".seal-btn");
+  if(sealBtn) sealBtn.dataset.t = "رئيس البنكرتون\nاندرو ميلتون";
   Array.prototype.forEach.call(document.querySelectorAll(".stamp-btn"), function(b){
     b.addEventListener("click", function(){ arm(b, b.dataset.t, b.dataset.c); });
   });
