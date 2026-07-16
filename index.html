@@ -238,15 +238,11 @@ h1{
 .col-serial{ width:7%; }
 .col-id{ width:18%; } .col-name{ width:24%; } .col-rank{ width:24%; } .col-date{ width:17%; } .col-status{ width:10%; }
 
-/* خانة الترقيم — رقمٌ ثابت لا يُكتب، في مربّعٍ بحبر الدم ليَبين */
+/* خانة الترقيم — رقمٌ ثابت لا يُكتب: كبيرٌ أسود بأرقامٍ لاتينية، بلا إطار */
 td.col-serial{ text-align:center; }
 .serial{
-  display:inline-flex; align-items:center; justify-content:center;
-  width:34px; height:34px; box-sizing:border-box;
-  border:1.6px solid var(--blood); border-radius:2px;   /* مربّع */
-  font-family:"Old Standard TT",Georgia,serif; font-weight:700; font-size:18px;
-  color:var(--blood); direction:ltr; unicode-bidi:isolate;
-  box-shadow: inset 0 0 0 1px rgba(138,23,23,.12);
+  font-family:"Old Standard TT",Georgia,serif; font-weight:700; font-size:24px;
+  color:#241a12; direction:ltr; unicode-bidi:isolate;
 }
 .blank-line .serial{ opacity:.3; }
 
@@ -1573,10 +1569,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     tr.style.setProperty("--drift", (drift * (1 + fatigue)).toFixed(2) + "px");
     tr.style.setProperty("--tilt",  (tilt  * (1 + fatigue)).toFixed(3) + "deg");
 
-    // خانة المسلسل — رقم الصفّ في السجلّ كلّه (لا في الصفحة): موضعه العالميّ + ١
+    // خانة الترقيم — رقم الصفّ في السجلّ كلّه (لا في الصفحة)، بأرقامٍ لاتينية
     var sTd = document.createElement("td"); sTd.className = "col-serial";
     var sNum = document.createElement("span"); sNum.className = "serial";
-    sNum.textContent = arNum(page * PER_LEAF + index + 1);
+    sNum.textContent = String(page * PER_LEAF + index + 1);
     sTd.appendChild(sNum); tr.appendChild(sTd);
 
     board.cols.forEach(function(c){ tr.appendChild(cell(rec, c)); });
