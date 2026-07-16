@@ -1,3 +1,4 @@
 schema.sql
 seed.sql
 realtime.sql
+stamp-size.sql

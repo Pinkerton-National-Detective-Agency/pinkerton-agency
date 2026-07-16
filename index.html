@@ -457,11 +457,25 @@ tr[data-ink]::after{ background: var(--row-ink) !important; }   /* الشطب ي
   border:2px solid currentColor; border-radius:46%/56%; padding:2px 14px;
   font-family:"Amiri",serif; font-weight:700; font-size:15px; letter-spacing:0;
   line-height:1.55; white-space:nowrap; user-select:none;
-  transform: translate(-50%,-50%) rotate(var(--rot,-7deg));
+  transform: translate(-50%,-50%) rotate(var(--rot,-7deg)) scale(var(--stamp-scale,1));
 }
 .stamp:hover{ outline:1px dashed currentColor; outline-offset:4px; }
+.stamp.selected{ outline:2px dashed currentColor; outline-offset:5px; }
 body.arming .leaf{ cursor:crosshair; }
 body.arming .leaf::after{ pointer-events:none; }
+
+/* شريط تحكّم صغير يظهر على الختم المختار: تكبير/تصغير ورفع. خارج المزج والمرشّح. */
+.stamp-ctl{
+  position:absolute; z-index:7; display:flex; gap:2px; align-items:center;
+  transform:translate(-50%,-50%); pointer-events:auto;
+  background:#2F241C; border:1px solid rgba(167,148,122,.4); border-radius:3px;
+  padding:2px 3px; box-shadow:0 4px 14px -4px rgba(0,0,0,.7); white-space:nowrap;
+}
+.stamp-ctl button{ font-family:"Amiri",serif; font-size:14px; line-height:1; cursor:pointer;
+  background:none; border:0; color:#F0DCBE; padding:3px 7px; border-radius:2px; }
+.stamp-ctl button:hover{ background:rgba(227,207,180,.18); }
+.stamp-ctl .szval{ font-family:"Old Standard TT",serif; font-size:12px; color:#C8AC8B; min-width:38px; text-align:center; direction:ltr; }
+.stamp-ctl .lift{ color:#e0897a; }
 
 /* أزرار الأختام على المكتب — كلٌّ بصبغته، فترى ما تحمله قبل أن تضربه */
 .stamp-btn{ border-color: color-mix(in srgb, var(--c) 55%, transparent) !important;
@@ -557,6 +571,70 @@ body.arming .leaf::after{ pointer-events:none; }
 .stamp-row{
   flex:1 0 100%; display:flex; align-items:center; gap:8px; flex-wrap:wrap;
   margin-top:8px; padding-top:9px; border-top:1px solid rgba(167,148,122,.16);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   لوحة الأدوات الجانبية — الأختام والمقاس والطلبات، في فراغ المكتب بجوار الورقة.
+   على الشاشات العريضة: عمودٌ ثابت على الجانب. على الضيّقة: تنساب أسفل المكتب.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.sidetools{
+  position:fixed; top:50%; right:16px; transform:translateY(-50%);
+  width:202px; max-height:92vh; overflow:auto; z-index:20;
+  display:flex; flex-direction:column; gap:9px;
+  padding:14px 14px 16px; border-radius:3px;
+  background:rgba(28,22,18,.82); border:1px solid rgba(167,148,122,.22);
+  box-shadow:0 14px 40px -14px rgba(0,0,0,.7);
+  font-family:"Amiri",serif; letter-spacing:0;
+}
+body[data-gate] .sidetools, body[data-booting] .sidetools{ display:none; }
+/* القارئ لا يكتب: الأختام والمقاس مخفية عنه، ولا يبقى إلا زرّ الطلبات (للمالك) */
+body:not([data-role="owner"]):not([data-role="editor"]) .sidetools .side-write{ display:none; }
+body:not([data-role="owner"]) .sidetools #ownerbtn{ display:none; }
+/* لو خلت اللوحة من كلّ شيء (قارئ غير مالك) نخفيها بالكامل */
+body[data-role="reader"] .sidetools{ display:none; }
+
+.side-title{ font-size:11px; color:var(--paper-shadow); opacity:.8;
+  border-bottom:1px solid rgba(167,148,122,.18); padding-bottom:5px; margin-bottom:2px; }
+.side-stamps{ display:flex; flex-direction:column; gap:5px; }
+.sidetools .stamp-btn{ width:100%; text-align:center; font-family:"Amiri",serif; font-size:14px;
+  cursor:pointer; border-radius:2px; padding:5px 8px; background:rgba(227,207,180,.08);
+  color:var(--paper-light); border:1px solid rgba(167,148,122,.28); }
+.side-free{ display:flex; flex-wrap:wrap; gap:5px; align-items:center; margin-top:2px; }
+.side-free input[type="text"]{ flex:1 1 90px; min-width:0; background:rgba(227,207,180,.09);
+  border:1px solid rgba(167,148,122,.28); border-radius:2px; color:var(--paper-light);
+  font-family:"Amiri",serif; font-size:13px; padding:4px 8px; outline:none; }
+.side-free input[type="color"]{ width:30px; height:26px; padding:0; border:1px solid rgba(167,148,122,.35);
+  border-radius:2px; background:none; cursor:pointer; }
+.sidetools .btn-strike{ font-family:"Amiri",serif; font-size:13px; cursor:pointer; border-radius:2px;
+  padding:4px 12px; background:rgba(227,207,180,.10); color:var(--paper-light);
+  border:1px solid rgba(167,148,122,.28); }
+.sidetools .btn-strike:hover{ background:rgba(227,207,180,.2); }
+.sidetools .stamp-btn.armed, .sidetools .btn-strike.armed{
+  background:var(--c,#A3201F) !important; color:#F5E6CE !important; border-color:rgba(227,207,180,.6) !important; }
+
+/* مقاس الختم المُقبِل — يُطبَّق على الختم الذي تضربه بعده */
+.side-size{ display:flex; align-items:center; gap:6px; margin-top:2px;
+  padding-top:9px; border-top:1px solid rgba(167,148,122,.16); }
+.side-size label{ font-size:12px; color:var(--paper-shadow); flex:1 1 auto; }
+.side-size button{ font-family:"Amiri",serif; font-size:16px; line-height:1; cursor:pointer; width:26px; height:26px;
+  background:rgba(227,207,180,.10); color:var(--paper-light); border:1px solid rgba(167,148,122,.3); border-radius:2px; }
+.side-size button:hover{ background:rgba(227,207,180,.2); }
+.side-size .szshow{ font-family:"Old Standard TT",serif; font-size:13px; color:#C8AC8B; min-width:44px; text-align:center; direction:ltr; }
+.side-hint{ font-size:10.5px; color:var(--paper-shadow); opacity:.6; line-height:1.6; margin-top:2px; }
+.sidetools #ownerbtn{ font-family:"Amiri",serif; font-size:14px; cursor:pointer; border-radius:2px;
+  padding:7px 10px; margin-top:4px; background:rgba(61,48,43,.5); color:var(--paper-light);
+  border:1px solid rgba(167,148,122,.35); }
+.sidetools #ownerbtn:hover{ background:rgba(61,48,43,.75); }
+
+/* دون هذا العرض لا يتّسع المكان لورقةٍ ٩٦٠ + لوحةٍ جانبية دون تلامس (شريط التمرير
+   يأكل ~١٥px)، فتنساب اللوحة أفقياً أسفل المكتب بدل أن تطفو فوق الورقة. */
+@media (max-width: 1480px){
+  .sidetools{ position:static; transform:none; width:min(960px,100%); max-height:none;
+    margin:12px auto 0; flex-direction:row; flex-wrap:wrap; align-items:center; }
+  .sidetools .side-title{ flex:1 0 100%; border:0; padding:0; margin:0; }
+  .side-stamps{ flex-direction:row; flex-wrap:wrap; }
+  .sidetools .stamp-btn{ width:auto; }
+  .side-size{ border:0; padding:0; }
 }
 
 .pager{ display:flex; align-items:center; justify-content:center; gap:16px;
@@ -903,8 +981,6 @@ body[data-panel] .panel-back{ display:flex; }
 <div class="desk" id="desk">
   <button type="button" id="add" class="desk-write">قيد جديد</button>
 
-  <button type="button" id="ownerbtn" title="لوحة المالك">الطلبات والصلاحيات</button>
-
   <div class="desk-sep"></div>
   <label for="q">كشف</label>
   <input type="text" id="q" placeholder="اسم أو معرّف…" autocomplete="off">
@@ -924,35 +1000,38 @@ body[data-panel] .panel-back{ display:flex; }
   <button type="button" id="logout" class="pbtn" style="padding:3px 10px">خروج</button>
 
   <span class="count" id="count"></span>
+</div>
 
-  <!-- الأختام: اختر ختماً ثم انقر أيّ موضع على الورقة. وانقر ختماً مضروباً لترفعه.
+<!-- ═══ لوحة الأدوات الجانبية — الأختام والمقاس والطلبات، في فراغ المكتب بجوار الورقة.
+     ⚠ صبغات الأختام مقصودة فاقعة: الختم يُمزج multiply على ورق كريمي فيُغمّق ولا يُفتّح،
+        فحُلّت كلٌّ عكسياً من اللون المقصود (‎#0E85FF‎→سماوي، ‎#FB5F00‎→برتقالي، ‎#006130‎→أخضر). ═══ -->
+<aside class="sidetools" id="sidetools">
+  <div class="side-title">أدوات المكتب</div>
 
-       ⚠ لا «تُصلِح» هذه الصبغات لأنها تبدو فاقعة في الشيفرة — هي مقصودة كذلك.
-       الختم يُمزج بـ mix-blend-mode:multiply على ورقٍ كريمي (#E3CFB4)، والضربُ يُغمّق
-       ولا يُفتّح أبداً، فما تراه هنا ليس ما يُرسم. حُلَّت كلٌّ منها عكسياً من اللون المقصود:
-
-         data-c ‎#0E85FF‎ (أزرق فاقع)  →  يُرسم ‎#3C82B4‎  سماوي
-         data-c ‎#006130‎ (أخضر غامق)  →  يُرسم ‎#326B42‎  أخضر
-         data-c ‎#FB5F00‎ (برتقالي ناري)→  يُرسم ‎#E06A28‎  برتقالي فاقع
-         data-c ‎#A32020‎               →  يُرسم ‎#A34239‎  أحمر
-
-       وسقفٌ فيزيائيّ لا حيلة فيه: الضرب لا يتجاوز لون الخلفية، وأزرق الورق ١٨٠ —
-       فلا يعلو أزرق أيّ ختمٍ عنه مهما بلغت صبغته. -->
-  <div class="stamp-row desk-write">
-    <label>الأختام</label>
+  <div class="side-stamps side-write">
     <button type="button" class="stamp-btn" style="--c:#A34239" data-t="مفصول"  data-c="#A32020">مفصول</button>
     <button type="button" class="stamp-btn" style="--c:#A34239" data-t="سُرِّح"   data-c="#A32020">سُرِّح</button>
     <button type="button" class="stamp-btn" style="--c:#326B42" data-t="بالخدمة" data-c="#006130">بالخدمة</button>
     <button type="button" class="stamp-btn" style="--c:#3C82B4" data-t="إجازة"   data-c="#0E85FF">إجازة</button>
     <button type="button" class="stamp-btn" style="--c:#E06A28" data-t="متغيّب"  data-c="#FB5F00">متغيّب</button>
-
-    <div class="desk-sep"></div>
-    <label for="stamptext">ختم آخر</label>
-    <input type="text" id="stamptext" placeholder="اكتب نصّه…" style="width:96px" autocomplete="off">
-    <input type="color" id="stampcolour" value="#5C4A63" title="صبغة الختم — ستُرسم أغمق مما تختار، فالضرب يُغمّق">
-    <button type="button" id="armstamp">اضربه</button>
   </div>
-</div>
+
+  <div class="side-free side-write">
+    <input type="text" id="stamptext" placeholder="ختم آخر…" autocomplete="off">
+    <input type="color" id="stampcolour" value="#5C4A63" title="صبغة الختم">
+    <button type="button" class="btn-strike" id="armstamp">اضربه</button>
+  </div>
+
+  <div class="side-size side-write">
+    <label>مقاس الختم</label>
+    <button type="button" id="szdown" title="أصغر">−</button>
+    <span class="szshow" id="szshow">١٠٠٪</span>
+    <button type="button" id="szup" title="أكبر">+</button>
+  </div>
+  <div class="side-hint side-write">اختر ختماً ثم انقر الورقة. انقر ختماً مضروباً لتكبيره أو رفعه.</div>
+
+  <button type="button" id="ownerbtn" title="لوحة المالك">الطلبات والصلاحيات</button>
+</aside>
 
 
 <!-- ═══ الوثيقة المختومة — ما يراه الغريب. لا اسم في الصفحة: قضبان الطمس زخرفة. ═══ -->
@@ -1037,6 +1116,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
         hitEl = $("hit"), qEl = $("q"), addEl = $("add"), inkEl = $("ink"),
         inkResetEl = $("inkreset"), armEl = $("armstamp"),
         stampTextEl = $("stamptext"), stampColourEl = $("stampcolour"),
+        szUpEl = $("szup"), szDownEl = $("szdown"), szShowEl = $("szshow"),
         gateEl = $("gate"), loginEl = $("login"), logoutEl = $("logout"),
         whoEl = $("whoami"), gateWhoEl = $("gatewho"), gateMsgEl = $("gatemsg"),
         ownerBtn = $("ownerbtn"), panelBack = $("panelback"), panelClose = $("panelclose"),
@@ -1525,35 +1605,76 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   });
 
   // ── الأختام ──────────────────────────────────────────────────────────────
+  // مقاس الختم المُقبِل (معامل التحجيم). ٤٠٪..٤٠٠٪ بخطوة ١٠٪. يُطبَّق على ما تضربه بعده.
+  var armSize = 1, selectedStampId = null, szSaveT = null;
+  function clampSz(v){ return Math.min(4, Math.max(0.4, Math.round(v * 100) / 100)); }
+  function szPct(v){ return arNum(Math.round(v * 100)) + "٪"; }
+  function updateSzShow(){ szShowEl.textContent = szPct(armSize); }
+
   function renderStamps(){
     stampsEl.textContent = "";
     if(!canWrite()) return;
     pageStamps.forEach(function(st){
       var el = document.createElement("span");
-      el.className = "stamp"; el.textContent = st.t;
+      el.className = "stamp" + (st.id === selectedStampId ? " selected" : "");
+      el.textContent = st.t;
       el.style.left = (st.x * 100) + "%"; el.style.top = (st.y * 100) + "%";
       el.style.setProperty("--rot", st.rot + "deg");
+      el.style.setProperty("--stamp-scale", st.sz || 1);
       el.style.setProperty("--stamp-colour", st.c || "#A3201F");
-      el.title = "انقر لرفع الختم";
-      el.addEventListener("click", async function(ev){
+      el.title = "انقر للتحديد ثم كبّره أو ارفعه";
+      el.addEventListener("click", function(ev){
         ev.stopPropagation();
-        var res = await sb.from("roster_stamps").delete().eq("id", st.id).select().single();
-        if(res.error){ toast("تعذّر رفع الختم", true); return; }
-        pageStamps = pageStamps.filter(function(x){ return x.id !== st.id; });
+        selectedStampId = (selectedStampId === st.id) ? null : st.id;
         renderStamps();
       });
       stampsEl.appendChild(el);
+      if(st.id === selectedStampId) attachStampCtl(el, st);
     });
+  }
+
+  // شريط التحكّم على الختم المختار: −  ٪  +  ارفع
+  function attachStampCtl(stampEl, st){
+    var ctl = document.createElement("div");
+    ctl.className = "stamp-ctl";
+    // فوق الختم قليلاً
+    ctl.style.left = (st.x * 100) + "%";
+    ctl.style.top  = "calc(" + (st.y * 100) + "% - 34px)";
+    var mk = function(txt, cls){ var b = document.createElement("button"); b.type="button"; b.textContent=txt; if(cls) b.className=cls; return b; };
+    var bMinus = mk("−"), val = document.createElement("span"), bPlus = mk("+"), bLift = mk("ارفع","lift");
+    val.className = "szval"; val.textContent = szPct(st.sz || 1);
+    function resize(delta){
+      st.sz = clampSz((st.sz || 1) + delta);
+      val.textContent = szPct(st.sz);
+      stampEl.style.setProperty("--stamp-scale", st.sz);
+      if(szSaveT) clearTimeout(szSaveT);
+      szSaveT = setTimeout(async function(){
+        var res = await sb.from("roster_stamps").update({ sz: st.sz }).eq("id", st.id).select().single();
+        if(res.error) toast("تعذّر حفظ المقاس", true);
+      }, 350);
+    }
+    bMinus.addEventListener("click", function(ev){ ev.stopPropagation(); resize(-0.1); });
+    bPlus .addEventListener("click", function(ev){ ev.stopPropagation(); resize(+0.1); });
+    bLift .addEventListener("click", async function(ev){
+      ev.stopPropagation();
+      var res = await sb.from("roster_stamps").delete().eq("id", st.id).select().single();
+      if(res.error){ toast("تعذّر رفع الختم", true); return; }
+      pageStamps = pageStamps.filter(function(x){ return x.id !== st.id; });
+      selectedStampId = null; renderStamps();
+    });
+    ctl.appendChild(bMinus); ctl.appendChild(val); ctl.appendChild(bPlus); ctl.appendChild(bLift);
+    stampsEl.appendChild(ctl);
   }
 
   function disarm(){
     arming = false; held = null;
     document.body.classList.remove("arming");
-    Array.prototype.forEach.call(document.querySelectorAll("#desk button.armed"), function(b){ b.classList.remove("armed"); });
+    Array.prototype.forEach.call(document.querySelectorAll(".sidetools button.armed"), function(b){ b.classList.remove("armed"); });
   }
   function arm(btn, t, c){
     var already = arming && held && held.t === t && held.c === c;
     disarm(); if(already) return;
+    if(selectedStampId !== null){ selectedStampId = null; renderStamps(); }   // الأنماط تتنافى
     held = { t:t, c:c }; arming = true;
     document.body.classList.add("arming"); btn.classList.add("armed");
   }
@@ -1562,8 +1683,19 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   });
   armEl.addEventListener("click", function(){ arm(armEl, (stampTextEl.value || "").trim() || "سُرِّح", stampColourEl.value); });
 
+  // أزرار المقاس المُقبِل
+  szUpEl.addEventListener("click", function(){ armSize = clampSz(armSize + 0.1); updateSzShow(); });
+  szDownEl.addEventListener("click", function(){ armSize = clampSz(armSize - 0.1); updateSzShow(); });
+  updateSzShow();
+
   leafEl.addEventListener("click", async function(ev){
-    if(!arming || !held || !canWrite()) return;
+    // نقرةٌ على ورقةٍ بلا ختمٍ محمول: إن كان ثمّة ختمٌ مختار، ألغِ اختياره فقط.
+    if(!arming || !held || !canWrite()){
+      if(selectedStampId !== null && !ev.target.closest(".stamp") && !ev.target.closest(".stamp-ctl")){
+        selectedStampId = null; renderStamps();
+      }
+      return;
+    }
     ev.preventDefault(); ev.stopPropagation();
     var r = leafEl.getBoundingClientRect();
     var st = {
@@ -1571,16 +1703,21 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
       x: +((ev.clientX - r.x) / r.width).toFixed(4),
       y: +((ev.clientY - r.y) / r.height).toFixed(4),
       rot: Math.round(Math.random() * 16 - 8),
+      sz: armSize,
       t: held.t, c: held.c
     };
-    var was = held;
     disarm();
     var res = await sb.from("roster_stamps").insert(st).select().single();
     if(res.error){ toast("تعذّر ضرب الختم: " + res.error.message, true); return; }
     pageStamps.push(res.data);
     renderStamps();
   }, true);
-  document.addEventListener("keydown", function(ev){ if(ev.key === "Escape" && arming) disarm(); });
+  document.addEventListener("keydown", function(ev){
+    if(ev.key === "Escape"){
+      if(arming) disarm();
+      if(selectedStampId !== null){ selectedStampId = null; renderStamps(); }
+    }
+  });
 
   // ── لون الحبر ────────────────────────────────────────────────────────────
   async function paintInk(hex){
