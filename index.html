@@ -475,13 +475,17 @@ tr[data-ink]::after{ background: var(--row-ink) !important; }   /* الشطب ي
 .stamp:hover{ outline:1px dashed currentColor; outline-offset:4px; }
 .stamp.selected{ outline:2px dashed currentColor; outline-offset:5px; }
 
-/* ختمٌ نصّيٌّ بسطرين (احتياطيّ لأيّ ختم متعدّد الأسطر) */
-.stamp.seal{
-  border:3px double currentColor; border-radius:50%/44%;
-  padding:12px 26px; line-height:1.5; font-size:15px; text-align:center; white-space:normal;
+/* الختم المربّع (ختم القبض) — مستطيلٌ بحدٍّ مزدوج، سطرٌ لاتينيّ وسطرٌ عربيّ */
+.stamp.box{
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  border:2px solid currentColor; border-radius:2px;
+  padding:7px 16px; white-space:normal; text-align:center;
 }
-.stamp.seal::before{ content:""; position:absolute; inset:4px; border:1px solid currentColor;
-  border-radius:inherit; opacity:.55; pointer-events:none; }
+.stamp.box::before{ content:""; position:absolute; inset:3px; border:1px solid currentColor;
+  border-radius:1px; opacity:.5; pointer-events:none; }
+.stamp.box .box-en{ font-family:"Old Standard TT",Georgia,serif; font-weight:700; font-variant:small-caps;
+  letter-spacing:.16em; font-size:14px; line-height:1; }
+.stamp.box .box-ar{ font-family:"Amiri",serif; font-weight:700; letter-spacing:0; font-size:15px; line-height:1.2; }
 
 /* الختم الرئاسي — خاتم العين المرسوم (SVG)، بلا إطار CSS: الدوائر من الرسم نفسه */
 .stamp.eseal{ border:none; padding:0; width:104px; height:104px; line-height:0; }
@@ -1191,8 +1195,10 @@ body[data-panel] .panel-back{ display:flex; }
     <button type="button" class="stamp-btn" style="--c:#326B42" data-t="بالخدمة" data-c="#006130">بالخدمة</button>
     <button type="button" class="stamp-btn" style="--c:#3C82B4" data-t="إجازة"   data-c="#0E85FF">إجازة</button>
     <button type="button" class="stamp-btn" style="--c:#E06A28" data-t="متغيّب"  data-c="#FB5F00">متغيّب</button>
-    <!-- الختم الرئاسي — سطران، بصبغةٍ رسمية، ونصّه يُضبَط في JS ليحمل سطراً جديداً -->
+    <!-- الختم الرئاسي — خاتم العين، نصّه يُضبَط في JS -->
     <button type="button" class="stamp-btn seal-btn" style="--c:#7A2230" data-c="#8A1C2C">ختم رئاسي</button>
+    <!-- ختم القبض — مربّع بحبرٍ أزرق، سطران؛ النصّ يُضبَط في JS ليحمل سطراً جديداً -->
+    <button type="button" class="stamp-btn box-btn" style="--c:#33489C" data-c="#123CDA">تمّ القبض</button>
   </div>
 
   <div class="side-free side-write">
@@ -2045,14 +2051,17 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     pageStamps.forEach(function(st){
       var el = document.createElement("span");
       var eseal = String(st.t).indexOf("seal:") === 0;   // الختم الرئاسي = خاتم العين
-      var multi = !eseal && String(st.t).indexOf("\n") >= 0;
-      el.className = "stamp" + (st.id === selectedStampId ? " selected" : "") + (eseal ? " eseal" : (multi ? " seal" : ""));
+      var box   = !eseal && String(st.t).indexOf("\n") >= 0;   // ختمٌ مربّع بسطرين
+      el.className = "stamp" + (st.id === selectedStampId ? " selected" : "") + (eseal ? " eseal" : (box ? " box" : ""));
       if(eseal){
         el.innerHTML = sealSVG(String(st.t).slice(5), st.id);
-      }else if(multi){
-        String(st.t).split("\n").forEach(function(line, i){
-          if(i) el.appendChild(document.createElement("br"));
-          el.appendChild(document.createTextNode(line));
+      }else if(box){
+        String(st.t).split("\n").forEach(function(line){
+          var sp = document.createElement("span");
+          // سطرٌ لاتينيّ بالكامل → حروف مبعثرة كطابع؛ العربيّ بلا تباعد
+          sp.className = (/[A-Za-z]/.test(line) && !/[؀-ۿ]/.test(line)) ? "box-en" : "box-ar";
+          sp.textContent = line;
+          el.appendChild(sp);
         });
       }else{ el.textContent = st.t; }
       el.style.left = (st.x * 100) + "%"; el.style.top = (st.y * 100) + "%";
@@ -2119,6 +2128,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   // الختم الرئاسي = خاتم العين، بالنصّ «ميلتون». السابقة seal: تُميّزه عند الرسم.
   var sealBtn = document.querySelector(".seal-btn");
   if(sealBtn) sealBtn.dataset.t = "seal:ميلتون";
+  // ختم القبض = مربّع بسطرين (سطرٌ جديد يُميّزه عن الأختام البيضاوية)
+  var boxBtn = document.querySelector(".box-btn");
+  if(boxBtn) boxBtn.dataset.t = "APPREHENDED\nتَمَّ القَبْضُ عَلَيْهِ";
   Array.prototype.forEach.call(document.querySelectorAll(".stamp-btn"), function(b){
     b.addEventListener("click", function(){ arm(b, b.dataset.t, b.dataset.c); });
   });
