@@ -797,6 +797,16 @@ body[data-role="editor"] .feat-photo:hover .feat-photo-hint{ opacity:1; }
 .feat-name[contenteditable], .feat-ach[contenteditable]{ cursor:text; }
 .feat-name[contenteditable]:focus, .feat-ach[contenteditable]:focus{ box-shadow:inset 0 -1px 0 0 var(--ink); }
 
+/* طبقة أختام البطاقة — فوق كلّ شيء (حتى الصورة)، لا تلتقط النقر إلا أختامها */
+.feat-stamps{ position:absolute; inset:0; z-index:6; pointer-events:none; }
+.feat-stamps .stamp{ pointer-events:auto; }
+/* أثناء حمل ختمٍ: تتعطّل تعديلات البطاقة مؤقتاً كي يقع النقر على البطاقة فيُوضَع الختم */
+body.arming .featured{ cursor:crosshair; }
+body.arming .featured .feat-name,
+body.arming .featured .feat-ach,
+body.arming .featured .feat-photo,
+body.arming .featured .feat-stamps{ pointer-events:none !important; }
+
 /* الشاشات الضيّقة: تنساب البطاقة في مجرى الصفحة أعلى الدفتر بدل الطفو على اليسار */
 @media (max-width: 1480px){
   .featured{ position:static; width:min(320px,92%); margin:0 auto 12px; top:auto; }
@@ -1075,6 +1085,8 @@ body[data-panel] .panel-back{ display:flex; }
   </div>
   <div class="feat-name" id="featName" data-ghost="اسم الموظف"></div>
   <div class="feat-ach" id="featAch" data-ghost="وصف إنجازاته خلال الأسبوع…"></div>
+  <!-- طبقة أختام البطاقة — تُوضَع عليها النجوم وغيرها (حتى فوق الصورة) -->
+  <div class="feat-stamps" id="featStamps"></div>
 </aside>
 
 <article class="leaf" id="leaf">
@@ -1312,7 +1324,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
         ownerBtn = $("ownerbtn"), panelBack = $("panelback"), panelClose = $("panelclose"),
         pendingList = $("pendingList"), memberList = $("memberList"), toastEl = $("toast"),
         featPhotoEl = $("featPhoto"), featImgEl = $("featImg"), featFileEl = $("featFile"),
-        featNameEl = $("featName"), featAchEl = $("featAch");
+        featNameEl = $("featName"), featAchEl = $("featAch"),
+        featuredEl = $("featured"), featStampsEl = $("featStamps");
 
   const esc = s => String(s == null ? "" : s).replace(/[<&>"]/g, c => ({ "<":"&lt;","&":"&amp;",">":"&gt;",'"':"&quot;" }[c]));
 
@@ -1531,12 +1544,58 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   }
 
   // ── موظف الأسبوع ───────────────────────────────────────────────────────────
+  var cardStamps = [];
   function showFeatured(f){
     f = f || {};
     featNameEl.textContent = f.name || "";
     featAchEl.textContent  = f.achievements || "";
     if(f.photo_url){ featImgEl.src = f.photo_url; featImgEl.hidden = false; }
     else{ featImgEl.removeAttribute("src"); featImgEl.hidden = true; }
+    cardStamps = Array.isArray(f.feat_stamps) ? f.feat_stamps : [];
+    renderCardStamps();
+  }
+  // أختام البطاقة — تُحفظ في العمود feat_stamps (jsonb). نقرُ ختمٍ يرفعه.
+  function renderCardStamps(){
+    if(!featStampsEl) return;
+    featStampsEl.textContent = "";
+    cardStamps.forEach(function(st, i){
+      var el = document.createElement("span");
+      el.className = "stamp";
+      fillStampContent(el, st.t, "c" + i);
+      el.style.left = (st.x * 100) + "%"; el.style.top = (st.y * 100) + "%";
+      el.style.setProperty("--rot", (st.rot || 0) + "deg");
+      el.style.setProperty("--stamp-scale", st.sz || 1);
+      el.style.setProperty("--stamp-colour", st.c || "#A3201F");
+      if(canWrite()){
+        el.title = "انقر لرفعه";
+        el.addEventListener("click", function(ev){
+          ev.stopPropagation();
+          cardStamps.splice(i, 1); saveCardStamps(); renderCardStamps();
+        });
+      }
+      featStampsEl.appendChild(el);
+    });
+  }
+  async function saveCardStamps(){
+    var res = await sb.from("featured").update({ feat_stamps: cardStamps }).eq("id", 1).select().single();
+    if(res.error){ toast("تعذّر حفظ الختم: " + res.error.message, true); return false; }
+    return true;
+  }
+  // وضعُ ختمٍ على البطاقة أثناء الحمل — والتعديلات معطّلة حينها (CSS body.arming)
+  if(featuredEl){
+    featuredEl.addEventListener("click", function(ev){
+      if(!arming || !held || !canWrite()) return;
+      ev.preventDefault(); ev.stopPropagation();
+      var r = featuredEl.getBoundingClientRect();
+      cardStamps.push({
+        x: +((ev.clientX - r.x) / r.width).toFixed(4),
+        y: +((ev.clientY - r.y) / r.height).toFixed(4),
+        rot: Math.round(Math.random() * 16 - 8),
+        sz: armSize, t: held.t, c: held.c
+      });
+      disarm();
+      saveCardStamps(); renderCardStamps();
+    }, true);
   }
   async function loadFeatured(){
     try{
@@ -2052,30 +2111,30 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     '</svg>';
   }
 
+  // يملأ عنصر الختم بمحتواه حسب النوع (خاتم عين / نجمة / مربّع سطرين / نصّ)
+  var STAR_SVG = '<svg viewBox="0 0 24 24" class="star-svg" aria-hidden="true">' +
+    '<path fill="currentColor" stroke="currentColor" stroke-width="0.4" d="M12 2.2l2.95 6.32 6.85.78-5.08 4.66 1.38 6.74L12 17.9 5.9 21.5l1.38-6.74L2.2 9.3l6.85-.78z"/></svg>';
+  function fillStampContent(el, t, uid){
+    t = String(t);
+    if(t.indexOf("seal:") === 0){ el.classList.add("eseal"); el.innerHTML = sealSVG(t.slice(5), uid); }
+    else if(t === "star"){ el.classList.add("star"); el.innerHTML = STAR_SVG; }
+    else if(t.indexOf("\n") >= 0){
+      el.classList.add("box");
+      t.split("\n").forEach(function(line){
+        var sp = document.createElement("span");
+        sp.className = (/[A-Za-z]/.test(line) && !/[؀-ۿ]/.test(line)) ? "box-en" : "box-ar";
+        sp.textContent = line; el.appendChild(sp);
+      });
+    }else{ el.textContent = t; }
+  }
+
   function renderStamps(){
     stampsEl.textContent = "";
     if(!canWrite()) return;
     pageStamps.forEach(function(st){
       var el = document.createElement("span");
-      var eseal = String(st.t).indexOf("seal:") === 0;   // الختم الرئاسي = خاتم العين
-      var star  = String(st.t) === "star";                // نجمة
-      var box   = !eseal && !star && String(st.t).indexOf("\n") >= 0;   // ختمٌ مربّع بسطرين
-      el.className = "stamp" + (st.id === selectedStampId ? " selected" : "") +
-                     (eseal ? " eseal" : (star ? " star" : (box ? " box" : "")));
-      if(eseal){
-        el.innerHTML = sealSVG(String(st.t).slice(5), st.id);
-      }else if(star){
-        el.innerHTML = '<svg viewBox="0 0 24 24" class="star-svg" aria-hidden="true">' +
-          '<path fill="currentColor" stroke="currentColor" stroke-width="0.4" d="M12 2.2l2.95 6.32 6.85.78-5.08 4.66 1.38 6.74L12 17.9 5.9 21.5l1.38-6.74L2.2 9.3l6.85-.78z"/></svg>';
-      }else if(box){
-        String(st.t).split("\n").forEach(function(line){
-          var sp = document.createElement("span");
-          // سطرٌ لاتينيّ بالكامل → حروف مبعثرة كطابع؛ العربيّ بلا تباعد
-          sp.className = (/[A-Za-z]/.test(line) && !/[؀-ۿ]/.test(line)) ? "box-en" : "box-ar";
-          sp.textContent = line;
-          el.appendChild(sp);
-        });
-      }else{ el.textContent = st.t; }
+      el.className = "stamp" + (st.id === selectedStampId ? " selected" : "");
+      fillStampContent(el, st.t, st.id);
       el.style.left = (st.x * 100) + "%"; el.style.top = (st.y * 100) + "%";
       el.style.setProperty("--rot", st.rot + "deg");
       el.style.setProperty("--stamp-scale", st.sz || 1);
