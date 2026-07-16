@@ -716,8 +716,10 @@ body[data-gate] .booktabs, body[data-booting] .booktabs{ display:none; }
 /* ═══════════════════════════════════════════════════════════════════════════
    موظف الأسبوع — بطاقة ورقٍ على اليسار تحت التبويبات، بنفس الثيم.
    ═══════════════════════════════════════════════════════════════════════════ */
+/* حافّتها اليمنى ~٣٠px من الورقة، فتجلس في يمين الفراغ الأيسر قريبةً منها (مكان المربع
+   الذي حدّده المالك)، لا ملتصقةً بحرف الشاشة. تنكمش تلقائياً على الشاشات الأضيق. */
 .featured{
-  position:fixed; left:14px; top:316px; z-index:18; width:230px;
+  position:fixed; left:max(14px, calc((100vw - 960px)/2 - 260px)); top:316px; z-index:18; width:230px;
   display:flex; flex-direction:column; align-items:center; gap:8px;
   padding:16px 16px 18px; border-radius:2px;
   background-color:var(--paper);
