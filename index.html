@@ -654,6 +654,52 @@ body[data-role="reader"] .sidetools{ display:none; }
   .side-size{ border:0; padding:0; }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   ألسنة الفهرسة — تبويبات السجلّات كألسنة كتابٍ بارزة من الحرف الأيسر (الفوري).
+   ورقٌ مصفرٌّ بحبيبات، حبرٌ للكتابة، واللسان النشط يتقدّم نحو الدفتر ويغمق.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.booktabs{
+  position:fixed; top:120px; left:14px; z-index:19;
+  display:flex; flex-direction:column; gap:8px; align-items:flex-start;
+}
+body[data-gate] .booktabs, body[data-booting] .booktabs{ display:none; }
+
+.booktab{
+  position:relative; cursor:pointer; text-align:right;
+  font-family:"Amiri",serif; font-weight:700; font-size:15px; letter-spacing:0;
+  color:var(--ink); background-color:var(--paper-shade);
+  background-image: linear-gradient(to left, rgba(120,92,64,.28) 0, rgba(120,92,64,0) 22px);
+  border:1px solid rgba(120,92,64,.5); border-inline-start:none;
+  border-radius:0 3px 3px 0;                 /* الحرف الخارجي (يمين اللسان) مدوّر */
+  padding:10px 16px 10px 22px; min-width:150px;
+  box-shadow: 2px 3px 8px -3px rgba(0,0,0,.5);
+  transition: transform .14s, background-color .14s, color .14s;
+  transform: translateX(-6px);               /* مطويٌّ قليلاً تحت الدفتر */
+}
+.booktab:hover{ transform: translateX(2px); background-color:var(--paper-mid); }
+.booktab.active{
+  transform: translateX(10px);               /* النشط يبرز نحو القارئ */
+  background-color:var(--paper); color:var(--ink-press);
+  border-color:rgba(90,66,44,.7); box-shadow: 3px 4px 12px -3px rgba(0,0,0,.6);
+  font-weight:700;
+}
+.booktab.active::after{                       /* شريط حبرٍ أحمر على حرف اللسان النشط */
+  content:""; position:absolute; inset-inline-start:0; top:6px; bottom:6px; width:3px;
+  background:var(--stamp-red); opacity:.5; mix-blend-mode:multiply; border-radius:2px;
+}
+.booktab .tnum{ font-family:"Old Standard TT",serif; font-size:10px; opacity:.55; margin-inline-start:8px; }
+
+/* على الشاشات الضيّقة: صفٌّ أفقيّ فوق الدفتر بدل ألسنةٍ جانبية تتداخل معه */
+@media (max-width: 1480px){
+  .booktabs{ position:static; flex-direction:row; flex-wrap:wrap; gap:6px;
+    width:min(960px,100%); margin:0 auto 10px; justify-content:center; }
+  .booktab{ transform:none; min-width:0; border-inline-start:1px solid rgba(120,92,64,.5);
+    border-radius:3px 3px 0 0; padding:8px 16px; }
+  .booktab:hover{ transform:none; }
+  .booktab.active{ transform:none; }
+  .booktab.active::after{ inset-inline-start:6px; inset-inline-end:6px; top:auto; bottom:0; width:auto; height:3px; }
+}
+
 .pager{ display:flex; align-items:center; justify-content:center; gap:16px;
         margin-top:12px; position:relative; z-index:2; }
 .pager .folio{ font-family:"Amiri",serif; font-size:13px; color:var(--ink-press); opacity:.7; letter-spacing:0; }
@@ -900,6 +946,9 @@ body[data-panel] .panel-back{ display:flex; }
 </defs>
 </svg>
 
+<!-- ألسنة الفهرسة — تبويبات السجلّات بستايل الكتاب، بارزةٌ من حرف الدفتر الأيسر -->
+<nav class="booktabs" id="booktabs" aria-label="السجلّات"></nav>
+
 <article class="leaf" id="leaf">
   <div class="leaf-vignette"></div>
   <div class="foxing-authored"></div>
@@ -955,15 +1004,7 @@ body[data-panel] .panel-back{ display:flex; }
   <div class="register-wrap">
     <div class="register-bg"></div>
     <table class="register">
-      <thead>
-        <tr>
-          <th class="col-id" scope="col">رقم المعرف</th>
-          <th scope="col">الاسم كامل</th>
-          <th class="col-rank" scope="col">رتبة العميل</th>
-          <th class="col-date" scope="col">تاريخ الالتحاق</th>
-          <th class="col-status" scope="col">حالة الخدمة</th>
-        </tr>
-      </thead>
+      <thead id="thead"></thead>
       <tbody id="rows"></tbody>
     </table>
   </div>
@@ -1124,8 +1165,6 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
 
   const PER_LEAF = 12;
   const RTL_RE = /[؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]/;
-  const GHOST  = { id:"الرقم", name:"الاسم", rank:"الرتبة", date:"يوم/شهر/سنة", status:"الحالة" };
-  const F2C    = { id:"badge", name:"name", rank:"rank", date:"joined", status:"status" };
 
   const $ = id => document.getElementById(id);
   const rowsEl = $("rows"), folioEl = $("folio"), prevEl = $("prev"), nextEl = $("next"),
@@ -1191,6 +1230,76 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
                "باشكاتب","محقّق عام","محقّق خاصّ","محقّق سرّي","الظِّلّ",
                "كاتب اختزال","ماسك الدفاتر","خفير"];
   var STATUSES = ["في الخدمة","في مهمّة","مُسرَّح","مُستقيل","مُتوفّى"];
+  var BAN_STATUSES = ["حظر دائم","حظر مؤقّت","قيد المراجعة","رُفع الحظر"];
+
+  // ── السجلّات (التبويبات) ────────────────────────────────────────────────────
+  // كل سجلّ = جدولٌ في القاعدة + أعمدةٌ + أختامه. الأدوار عامّة، فكلّها بنفس الصلاحيات.
+  // kind: badge=رقم لاتيني | name=اسم بأيّ خطّ | vocab=يُردّ لصفةٍ معتمدة | date=تاريخ | text=نصّ حرّ
+  var BOARDS = {
+    agents: {
+      key:"agents", tab:"سجل العملاء", table:"roster", stamps:"roster_stamps",
+      headers:["رقم المعرف","الاسم كامل","رتبة العميل","تاريخ الالتحاق","حالة الخدمة"],
+      cols:[
+        { field:"id",     col:"badge",  ghost:"الرقم",       cls:"col-id",     kind:"badge" },
+        { field:"name",   col:"name",   ghost:"الاسم",       cls:"",           kind:"name"  },
+        { field:"rank",   col:"rank",   ghost:"الرتبة",      cls:"col-rank",   kind:"vocab", vocab:RANKS },
+        { field:"date",   col:"joined", ghost:"يوم/شهر/سنة", cls:"col-date",   kind:"date"  },
+        { field:"status", col:"status", ghost:"الحالة",      cls:"col-status", kind:"vocab", vocab:STATUSES },
+      ],
+    },
+    banned: {
+      key:"banned", tab:"القائمة السوداء", table:"banned", stamps:"banned_stamps",
+      headers:["رقم المعرف","الاسم كامل","سبب المنع","تاريخ المنع","الحالة"],
+      cols:[
+        { field:"id",     col:"badge",     ghost:"الرقم",       cls:"col-id",     kind:"badge" },
+        { field:"name",   col:"name",      ghost:"الاسم",       cls:"",           kind:"name"  },
+        { field:"reason", col:"reason",    ghost:"السبب",       cls:"col-rank",   kind:"text"  },
+        { field:"date",   col:"banned_on", ghost:"يوم/شهر/سنة", cls:"col-date",   kind:"date"  },
+        { field:"status", col:"status",    ghost:"الحالة",      cls:"col-status", kind:"vocab", vocab:BAN_STATUSES },
+      ],
+    },
+  };
+  var BOARD_ORDER = ["agents", "banned"];
+  var board = BOARDS.agents;
+  function colOf(field){ for(var i=0;i<board.cols.length;i++) if(board.cols[i].field===field) return board.cols[i]; return null; }
+  function dbCol(field){ var c = colOf(field); return c ? c.col : field; }
+
+  // ── التبويبات والترويسة الديناميكية ─────────────────────────────────────────
+  var theadEl = $("thead"), bookTabsEl = $("booktabs");
+  function buildThead(){
+    var tr = document.createElement("tr");
+    board.cols.forEach(function(c, i){
+      var th = document.createElement("th");
+      th.setAttribute("scope","col");
+      if(c.cls) th.className = c.cls;
+      th.textContent = board.headers[i] || "";
+      tr.appendChild(th);
+    });
+    theadEl.textContent = ""; theadEl.appendChild(tr);
+  }
+  function buildTabs(){
+    bookTabsEl.textContent = "";
+    BOARD_ORDER.forEach(function(key){
+      var b = BOARDS[key];
+      var el = document.createElement("button");
+      el.type = "button";
+      el.className = "booktab" + (key === board.key ? " active" : "");
+      el.textContent = b.tab;
+      el.addEventListener("click", function(){ if(key !== board.key) switchBoard(key); });
+      bookTabsEl.appendChild(el);
+    });
+  }
+  async function switchBoard(key){
+    if(!BOARDS[key] || key === board.key) return;
+    board = BOARDS[key];
+    epoch++;                       // يُبطل أيّ جلبٍ/إدراجٍ من السجلّ السابق ما زال طائراً
+    page = 0; selectedStampId = null; lastMatchId = 0;
+    if(qEl) qEl.value = ""; if(hitEl) hitEl.textContent = "";
+    buildTabs(); buildThead();
+    subscribeLive();              // نشترك على جدولَي السجلّ الجديد
+    await render();
+    flip();
+  }
 
   function bare(s){
     return String(s||"").replace(/[ً-ْـ]/g,"")
@@ -1206,6 +1315,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   // ── الحالة ─────────────────────────────────────────────────────────────────
   let session = null, role = null, uid = null;
   let total = 0, page = 0, pageRecs = [], pageStamps = [];
+  // رمز الجيل — يُرفع عند تبديل السجلّ، فيُلغي كلّ جلبٍ أو إدراجٍ بدأ قبل التبديل
+  // (وإلا رسم صفوف السجلّ القديم تحت ترويسة الجديد، وكتب بمعرّفاته الخطأ).
+  let epoch = 0;
   let lastRow = null, arming = false, held = null;
 
   const canWrite = () => role === "owner" || role === "editor";
@@ -1254,6 +1366,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     document.body.setAttribute("data-role", role);
     whoEl.textContent = displayName(session.user) + " · " + roleLabel(role);
     if(isOwner()) wireOwnerPanel();
+    buildTabs(); buildThead();
     await render();
     if(document.fonts && document.fonts.ready) document.fonts.ready.then(() => paint());
     subscribeLive();
@@ -1279,16 +1392,18 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     if(liveT) clearTimeout(liveT);
     liveT = setTimeout(refreshLive, 500);   // نجمّع رشقة تغييرات في إعادة جلبٍ واحدة
   }
+  var liveChannel = null;
   function subscribeLive(){
     try{
-      sb.channel("roster-live")
-        .on("postgres_changes", { event:"*", schema:"public", table:"roster" }, scheduleLive)
-        .on("postgres_changes", { event:"*", schema:"public", table:"roster_stamps" }, scheduleLive)
+      if(liveChannel){ sb.removeChannel(liveChannel); liveChannel = null; }
+      liveChannel = sb.channel("live-" + board.key)
+        .on("postgres_changes", { event:"*", schema:"public", table:board.table }, scheduleLive)
+        .on("postgres_changes", { event:"*", schema:"public", table:board.stamps }, scheduleLive)
         .subscribe();
     }catch(e){ /* الترابط اختياريّ: لو تعذّر يبقى التحديث بالتحديث اليدويّ */ }
-    // لو أُجِّل تحديثٌ لأننا كنّا نكتب، نفّذه فور الفراغ
-    document.addEventListener("visibilitychange", function(){ if(!document.hidden && liveDirty) refreshLive(); });
   }
+  // لو أُجِّل تحديثٌ لأننا كنّا نكتب، نفّذه فور الفراغ
+  document.addEventListener("visibilitychange", function(){ if(!document.hidden && liveDirty) refreshLive(); });
 
   loginEl.onclick = async () => {
     try{
@@ -1299,29 +1414,37 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   logoutEl.onclick = doLogout;
 
   // ── البيانات — من الخادم، ملزمةً ملزمة ─────────────────────────────────────
+  // صفّ القاعدة → سجلّ العرض، معمّماً على أعمدة السجلّ النشط.
   function toRec(r){
-    return { _k:r.id, id:r.badge||"", name:r.name||"", rank:r.rank||"", date:r.joined||"",
-             status:r.status||"", struck:!!r.struck, ink:r.ink||"", note:r.note||"" };
+    var rec = { _k:r.id, struck:!!r.struck, ink:r.ink||"", note:r.note||"" };
+    board.cols.forEach(function(c){ rec[c.field] = r[c.col] || ""; });
+    return rec;
   }
   function pageCount(){ return Math.max(1, Math.ceil((total + (canWrite() ? 1 : 0)) / PER_LEAF)); }
 
-  async function fetchPage(){
+  // e = جيلُ البدء. بعد كلّ await نتحقّق أنّه لم يتبدّل السجلّ، وإلا نُلغي دون أن نمسّ
+  // الحالة العامّة (total/pageRecs/pageStamps) — فلا تُرسَم بيانات سجلٍّ تحت ترويسة آخر.
+  async function fetchPage(e){
     const from = page*PER_LEAF, to = from + PER_LEAF - 1;
-    const { data, count, error } = await sb.from("roster")
+    const res = await sb.from(board.table)
       .select("*", { count:"exact" }).order("id", { ascending:true }).range(from, to);
-    if(error){ toast("تعذّر جلب السجل: " + error.message, true); pageRecs = []; total = 0; pageStamps = []; return; }
-    total = count || 0;
-    pageRecs = (data || []).map(toRec);
+    if(e !== epoch) return;                        // بُدِّل السجلّ أثناء الجلب
+    if(res.error){ toast("تعذّر جلب السجل: " + res.error.message, true); pageRecs = []; total = 0; pageStamps = []; return; }
+    total = res.count || 0;
+    pageRecs = (res.data || []).map(toRec);
     if(canWrite()){
-      const { data:st } = await sb.from("roster_stamps").select("*").eq("folio", page);
-      pageStamps = st || [];
+      const st = await sb.from(board.stamps).select("*").eq("folio", page);
+      if(e !== epoch) return;
+      pageStamps = st.data || [];
     }else pageStamps = [];
   }
 
   async function render(focus){
+    const e = epoch;
     if(page < 0) page = 0;
-    await fetchPage();
-    if(page > pageCount()-1){ page = pageCount()-1; await fetchPage(); }   // بعد أن عرفنا total
+    await fetchPage(e);
+    if(e !== epoch) return;
+    if(page > pageCount()-1){ page = pageCount()-1; await fetchPage(e); if(e !== epoch) return; }
     paint(focus);
   }
 
@@ -1329,7 +1452,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     rowsEl.textContent = "";
     pageRecs.forEach((r, i) => rowsEl.appendChild(renderRow(r, i, false)));
     if(canWrite() && page === pageCount()-1 && pageRecs.length < PER_LEAF){
-      rowsEl.appendChild(renderRow({ _k:"blank", id:"", name:"", rank:"", date:"", status:"" }, pageRecs.length, true));
+      rowsEl.appendChild(renderRow({ _k:"blank" }, pageRecs.length, true));
     }
     Array.prototype.forEach.call(rowsEl.querySelectorAll("td"), fit);
     renderStamps();
@@ -1353,13 +1476,14 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   function scriptOf(v){ var t = String(v || "").trim(); return (t && RTL_RE.test(t[0])) ? "ar" : "la"; }
 
   // ── بناء الخانة ──────────────────────────────────────────────────────────
-  function cell(rec, field, extraClass){
+  function cell(rec, c){
+    var field = c.field;
     var td = document.createElement("td");
-    if(extraClass) td.className = extraClass;
+    if(c.cls) td.className = c.cls;
     td.dataset.field = field;
     var raw = rec[field] || "";
-    var shown = (field === "date") ? fmtDate(raw) : raw;
-    var scr = (field === "id") ? "la" : (field === "date" ? "ar" : scriptOf(raw));
+    var shown = (c.kind === "date") ? fmtDate(raw) : raw;
+    var scr = (c.kind === "badge") ? "la" : (c.kind === "date" ? "ar" : scriptOf(raw));
     td.setAttribute("data-script", scr);
 
     var wrap = document.createElement("span"); wrap.className = "pen";
@@ -1367,7 +1491,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     var hand = document.createElement("span"); hand.className = "hand";
     if(canWrite()){ hand.setAttribute("contenteditable", "plaintext-only"); }
     hand.setAttribute("dir", scr === "ar" ? "rtl" : "ltr");
-    hand.dataset.ghost = GHOST[field];
+    hand.dataset.ghost = c.ghost;
     hand.textContent = shown;
     sweep.appendChild(hand); wrap.appendChild(sweep);
 
@@ -1408,11 +1532,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     tr.style.setProperty("--drift", (drift * (1 + fatigue)).toFixed(2) + "px");
     tr.style.setProperty("--tilt",  (tilt  * (1 + fatigue)).toFixed(3) + "deg");
 
-    tr.appendChild(cell(rec, "id",     "col-id"));
-    tr.appendChild(cell(rec, "name",   null));
-    tr.appendChild(cell(rec, "rank",   "col-rank"));
-    tr.appendChild(cell(rec, "date",   "col-date"));
-    tr.appendChild(cell(rec, "status", "col-status"));
+    board.cols.forEach(function(c){ tr.appendChild(cell(rec, c)); });
 
     if(rec.note){
       var note = document.createElement("span");
@@ -1474,7 +1594,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   rowsEl.addEventListener("input", function(ev){
     var hand = ev.target.closest(".hand"); if(!hand || !canWrite()) return;
     var td = hand.closest("td");
-    if(td.dataset.field === "name" || td.dataset.field === "rank"){
+    var c = colOf(td.dataset.field);
+    // الخانات الحرّة (اسم/سبب/رتبة) قد تُكتب بأيّ خطّ، فنعيد تحديد اليد واتجاه السنّ
+    if(c && (c.kind === "name" || c.kind === "text" || c.kind === "vocab")){
       var scr = scriptOf(hand.textContent);
       if(td.getAttribute("data-script") !== scr){
         td.setAttribute("data-script", scr);
@@ -1489,12 +1611,12 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     var td = hand.closest("td"), tr = td.closest("tr");
     td.classList.remove("editing");
     var field = td.dataset.field;
+    var c = colOf(field); if(!c) return;
+    var col = c.col;
     var val = hand.textContent.replace(/\s+/g," ").trim();
-    var col = F2C[field];
 
-    if(field === "rank")   val = canon(val, RANKS);
-    if(field === "status") val = canon(val, STATUSES);
-    if(field === "date" && val){
+    if(c.kind === "vocab") val = canon(val, c.vocab);
+    if(c.kind === "date" && val){
       var p = parseDate(val);
       if(p) val = p; else { hand.textContent = hand.dataset.before || ""; return; }
     }
@@ -1514,9 +1636,12 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
       // نُخرج السطر من حالة «الفاضي» تزامنياً، قبل أيّ await — هنا تُغلَق نافذة السباق.
       tr.classList.remove("blank-line");
       var insertObj = {}; insertObj[col] = val;
-      var fField = field, fVal = val, fTd = td, fHand = hand;
+      var fField = field, fVal = val, fTd = td, fHand = hand, e0 = epoch;
       tr._pending = (async function(){
-        var res = await sb.from("roster").insert(insertObj).select().single();
+        var res = await sb.from(board.table).insert(insertObj).select().single();
+        // بُدِّل السجلّ أثناء الإدراج: القيد حُفظ في جدوله الصحيح، لكن لا نمسّ حالة
+        // السجلّ الجديد ولا صفّه المنفصل — نكتفي بذلك.
+        if(e0 !== epoch) return;
         if(res.error){
           toast("تعذّر إثبات القيد: " + res.error.message, true);
           tr.classList.add("blank-line"); tr.dataset.k = "blank"; fHand.textContent = "";
@@ -1529,7 +1654,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
         fHand.textContent = (fField === "date") ? fmtDate(fVal) : fVal;
         fit(fTd); settle(fTd);
         if(rowsEl.children.length < PER_LEAF && page === pageCount()-1){
-          rowsEl.appendChild(renderRow({ _k:"blank", id:"", name:"", rank:"", date:"", status:"" },
+          rowsEl.appendChild(renderRow({ _k:"blank" },
                                        rowsEl.children.length, true));
         }else{
           folioEl.textContent = "ملزمة " + arNum(page+1) + " من " + arNum(pageCount());
@@ -1547,7 +1672,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
 
     var before = r[field];
     var upd = {}; upd[col] = val;
-    var res2 = await sb.from("roster").update(upd).eq("id", tr.dataset.k).select().single();
+    var res2 = await sb.from(board.table).update(upd).eq("id", tr.dataset.k).select().single();
     if(res2.error){
       toast("لم يُحفَظ التعديل: " + res2.error.message, true);
       hand.textContent = (field === "date") ? fmtDate(before) : (before || "");
@@ -1565,7 +1690,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   async function toggleStrike(k){
     var r = recOf(k); if(!r) return;
     var want = !r.struck;
-    var res = await sb.from("roster").update({ struck: want }).eq("id", k).select().single();
+    var res = await sb.from(board.table).update({ struck: want }).eq("id", k).select().single();
     if(res.error){ toast("تعذّر الشطب: " + res.error.message, true); return; }
     r.struck = want;
     var tr = rowsEl.querySelector('tr[data-k="' + k + '"]');
@@ -1576,7 +1701,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   }
   async function removeRow(k){
     if(!confirm("حذف هذا القيد نهائياً؟")) return;
-    var res = await sb.from("roster").delete().eq("id", k).select().single();
+    var res = await sb.from(board.table).delete().eq("id", k).select().single();
     if(res.error){ toast("تعذّر الحذف: " + res.error.message, true); return; }
     await render();
   }
@@ -1666,7 +1791,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
       stampEl.style.setProperty("--stamp-scale", st.sz);
       if(szSaveT) clearTimeout(szSaveT);
       szSaveT = setTimeout(async function(){
-        var res = await sb.from("roster_stamps").update({ sz: st.sz }).eq("id", st.id).select().single();
+        var res = await sb.from(board.stamps).update({ sz: st.sz }).eq("id", st.id).select().single();
         if(res.error) toast("تعذّر حفظ المقاس", true);
       }, 350);
     }
@@ -1674,7 +1799,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     bPlus .addEventListener("click", function(ev){ ev.stopPropagation(); resize(+0.1); });
     bLift .addEventListener("click", async function(ev){
       ev.stopPropagation();
-      var res = await sb.from("roster_stamps").delete().eq("id", st.id).select().single();
+      var res = await sb.from(board.stamps).delete().eq("id", st.id).select().single();
       if(res.error){ toast("تعذّر رفع الختم", true); return; }
       pageStamps = pageStamps.filter(function(x){ return x.id !== st.id; });
       selectedStampId = null; renderStamps();
@@ -1724,7 +1849,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
       t: held.t, c: held.c
     };
     disarm();
-    var res = await sb.from("roster_stamps").insert(st).select().single();
+    var res = await sb.from(board.stamps).insert(st).select().single();
     if(res.error){ toast("تعذّر ضرب الختم: " + res.error.message, true); return; }
     pageStamps.push(res.data);
     renderStamps();
@@ -1741,7 +1866,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     if(!lastRow || !lastRow.isConnected || !canWrite()) return;
     var r = recOf(lastRow.dataset.k); if(!r) return;
     var val = hex || null;
-    var res = await sb.from("roster").update({ ink: val }).eq("id", lastRow.dataset.k).select().single();
+    var res = await sb.from(board.table).update({ ink: val }).eq("id", lastRow.dataset.k).select().single();
     if(res.error){ toast("تعذّر تلوين السطر", true); return; }
     r.ink = hex || "";
     if(hex){ lastRow.dataset.ink = "1"; lastRow.style.setProperty("--row-ink", hex); }
@@ -1761,7 +1886,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     var t = (qEl.value || "").trim();
     if(!t){ hitEl.textContent = ""; lastMatchId = 0; return; }
     var needle = escLike(bare(westernDigits(t).toLowerCase()));
-    var res = await sb.from("roster").select("id")
+    var res = await sb.from(board.table).select("id")
       .ilike("search_bare", "%" + needle + "%")
       .order("id", { ascending:true }).gt("id", lastMatchId).limit(1);
     if(res.error){ toast("تعذّر الكشف", true); return; }
@@ -1771,7 +1896,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     }
     var matchId = res.data[0].id;
     lastMatchId = matchId;
-    var cres = await sb.from("roster").select("*", { count:"exact", head:true }).lt("id", matchId);
+    var cres = await sb.from(board.table).select("*", { count:"exact", head:true }).lt("id", matchId);
     var before = cres.count || 0;
     page = Math.floor(before / PER_LEAF);
     await render();
