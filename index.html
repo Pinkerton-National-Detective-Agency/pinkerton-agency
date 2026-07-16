@@ -232,11 +232,16 @@ h1{
    ثابتة قبل أن يُكتب فيها حرف. الكاتب لا يمطّ عموداً ليسع اسماً — يضيّق خطه. */
 /* عمود المعرّف ٢٠٪: معرّف ديسكورد ١٨ رقماً يشغل ١٤٣px عند ١٣px — والعمود يعطيه ١٤٨.
    يدخل كاملاً بلا تصغير، وهذا شرطه: رقم يُطابَق بالعين لا يُتهاوَن في وضوحه. */
-/* عمود الرتبة وُسِّع ليقارب الاسم (أقصر منه بشوي): الرتب طويلة («رئيس الوكالة»،
-   «مساعد المفتّش»)، وفي القائمة السوداء يحمل «سبب المنع» فيحتاج متّسعاً.
-   المجموع ١٠٠٪ بالضبط. المعرّف ١٨٪ يكفي لـ ١٨ رقم ديسكورد بلا تصغير. */
-.col-id{ width:18%; } .col-rank{ width:26%; } .col-date{ width:17%; } .col-status{ width:11%; }
-.register th:nth-child(2), .register td:nth-child(2){ width:28%; }   /* الاسم — البطل */
+/* الأعمدة بالأصناف لا بالترتيب (لأنّ عمود «مسلسل» يُضاف أوّلاً فيُزيح الترتيب).
+   عمود الرتبة يقارب الاسم (أقصر بشوي)، والمعرّف يكفي ١٨ رقم ديسكورد. المجموع ١٠٠٪. */
+.col-serial{ width:7%; }
+.col-id{ width:18%; } .col-name{ width:24%; } .col-rank{ width:24%; } .col-date{ width:17%; } .col-status{ width:10%; }
+
+/* خانة المسلسل — رقمٌ ثابت لا يُكتب، متمركز بحبرٍ باهت */
+td.col-serial{ text-align:center; }
+.serial{ font-family:"Old Standard TT",Georgia,serif; font-size:15px; color:var(--ink-pale);
+  opacity:.85; direction:ltr; unicode-bidi:isolate; }
+.blank-line .serial{ opacity:.32; }
 
 /* رقم المعرف = معرّف ديسكورد: ١٧–١٩ رقماً تُطابَق بالعين حرفاً حرفاً.
    ⚠ كان بخط Herr Von Muellerhoff الراقص — وهو خط توقيعات مبنيّ على تواقيع أمريكية حقيقية،
@@ -860,6 +865,19 @@ body[data-panel] .panel-back{ display:flex; }
 .panel-empty{ font-family:"Amiri",serif; font-size:13px; color:var(--ink-press); opacity:.55; padding:8px 4px; letter-spacing:0; }
 #ownerbtn.desk-tool{ }
 
+/* سؤال التقويم — رقعةٌ صغيرة على ورق تظهر تحت خانة التاريخ */
+.cal-ask{
+  position:absolute; z-index:70; display:flex; align-items:center; gap:4px;
+  background-color:var(--paper); border:1px solid rgba(90,66,44,.6); border-radius:2px;
+  padding:4px 6px; box-shadow:0 6px 18px -5px rgba(0,0,0,.6);
+  font-family:"Amiri",serif; letter-spacing:0; white-space:nowrap;
+}
+.cal-ask .cal-q{ font-size:12px; color:var(--ink-press); margin-inline-end:2px; }
+.cal-ask button{ font-family:"Amiri",serif; font-size:13px; font-weight:700; cursor:pointer;
+  border:1px solid rgba(61,48,43,.4); border-radius:2px; padding:3px 12px;
+  background:rgba(61,48,43,.06); color:var(--ink-press); }
+.cal-ask button:hover{ background:var(--ink-press); color:var(--paper-hi); }
+
 /* رقاقة الرسائل */
 .toast{ position:fixed; inset-inline:0; bottom:24px; margin:auto; width:max-content; max-width:90%;
   z-index:80; background:#2F241C; color:#F0DCBE; font-family:"Amiri",serif; font-size:14px; letter-spacing:0;
@@ -1216,15 +1234,25 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     if(!(d>=1 && d<=31) || !(mo>=1 && mo<=12) || !(y>=1000 && y<=9999)) return null;
     return y + "-" + String(mo).padStart(2,"0") + "-" + String(d).padStart(2,"0");
   }
+  // التقويم: الميلادي يُخزَّن مجرّداً «1899-04-09»؛ الهجريّ يُسبَق بـ «h:».
+  // الهجريّ يعرض أشهره بأسمائها ولاحقة «هـ» (المستخدم يكتب مكوّناته هجريّة، فلا تحويل).
+  var HIJRI_MONTHS = ["محرّم","صفر","ربيع الأول","ربيع الآخر","جمادى الأولى","جمادى الآخرة",
+                      "رجب","شعبان","رمضان","شوّال","ذو القعدة","ذو الحجّة"];
+  function isHijri(v){ return String(v||"").indexOf("h:") === 0; }
+  function isoPart(v){ var s = String(v||""); return isHijri(s) ? s.slice(2) : s; }
   function fmtDate(v){
     if(!v) return "";
-    var p = String(v).split("-"); if(p.length !== 3) return v;
+    var hij = isHijri(v), p = isoPart(v).split("-"); if(p.length !== 3) return v;
+    if(hij){
+      var m = +p[1];
+      return arNum(+p[2]) + " " + (HIJRI_MONTHS[m-1] || m) + " " + arNum(+p[0]) + " هـ";
+    }
     var d = new Date(+p[0], (+p[1])-1, +p[2]);
     return isNaN(d.getTime()) ? v : dateFmt.format(d);
   }
   function rawDate(v){
     if(!v) return "";
-    var p = String(v).split("-"); if(p.length !== 3) return v;
+    var p = isoPart(v).split("-"); if(p.length !== 3) return v;
     return arNum(+p[2]) + "/" + arNum(+p[1]) + "/" + arNum(+p[0]);
   }
 
@@ -1244,7 +1272,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
       headers:["رقم المعرف","الاسم كامل","رتبة العميل","تاريخ الالتحاق","حالة الخدمة"],
       cols:[
         { field:"id",     col:"badge",  ghost:"الرقم",       cls:"col-id",     kind:"badge" },
-        { field:"name",   col:"name",   ghost:"الاسم",       cls:"",           kind:"name"  },
+        { field:"name",   col:"name",   ghost:"الاسم",       cls:"col-name",           kind:"name"  },
         { field:"rank",   col:"rank",   ghost:"الرتبة",      cls:"col-rank",   kind:"vocab", vocab:RANKS },
         { field:"date",   col:"joined", ghost:"يوم/شهر/سنة", cls:"col-date",   kind:"date"  },
         { field:"status", col:"status", ghost:"الحالة",      cls:"col-status", kind:"vocab", vocab:STATUSES },
@@ -1255,7 +1283,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
       headers:["رقم المعرف","الاسم كامل","سبب المنع","تاريخ المنع","الحالة"],
       cols:[
         { field:"id",     col:"badge",     ghost:"الرقم",       cls:"col-id",     kind:"badge" },
-        { field:"name",   col:"name",      ghost:"الاسم",       cls:"",           kind:"name"  },
+        { field:"name",   col:"name",      ghost:"الاسم",       cls:"col-name",           kind:"name"  },
         { field:"reason", col:"reason",    ghost:"السبب",       cls:"col-rank",   kind:"text"  },
         { field:"date",   col:"banned_on", ghost:"يوم/شهر/سنة", cls:"col-date",   kind:"date"  },
         { field:"status", col:"status",    ghost:"الحالة",      cls:"col-status", kind:"vocab", vocab:BAN_STATUSES },
@@ -1271,6 +1299,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   var theadEl = $("thead"), bookTabsEl = $("booktabs");
   function buildThead(){
     var tr = document.createElement("tr");
+    var sTh = document.createElement("th");            // عمود المسلسل — أوّلاً (يمين RTL)
+    sTh.setAttribute("scope","col"); sTh.className = "col-serial"; sTh.textContent = "مسلسل";
+    tr.appendChild(sTh);
     board.cols.forEach(function(c, i){
       var th = document.createElement("th");
       th.setAttribute("scope","col");
@@ -1535,6 +1566,12 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     tr.style.setProperty("--drift", (drift * (1 + fatigue)).toFixed(2) + "px");
     tr.style.setProperty("--tilt",  (tilt  * (1 + fatigue)).toFixed(3) + "deg");
 
+    // خانة المسلسل — رقم الصفّ في السجلّ كلّه (لا في الصفحة): موضعه العالميّ + ١
+    var sTd = document.createElement("td"); sTd.className = "col-serial";
+    var sNum = document.createElement("span"); sNum.className = "serial";
+    sNum.textContent = arNum(page * PER_LEAF + index + 1);
+    sTd.appendChild(sNum); tr.appendChild(sTd);
+
     board.cols.forEach(function(c){ tr.appendChild(cell(rec, c)); });
 
     if(rec.note){
@@ -1667,6 +1704,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
       })();
       await tr._pending;
       tr._pending = null;
+      if(c.kind === "date" && val) offerHijri(td);   // خُزِّن ميلادياً؛ نسأل: هجريّ؟
       return;
     }
 
@@ -1685,9 +1723,56 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     if(field === "status") tr.dataset.status = val;
     hand.textContent = (field === "date") ? fmtDate(val) : val;
     fit(td); settle(td);
+    if(c.kind === "date" && val) offerHijri(td);
   }
 
   function settle(td){ td.classList.remove("settling"); void td.offsetWidth; td.classList.add("settling"); }
+
+  // ── سؤال التقويم — يظهر بعد كتابة التاريخ (مخزَّنٌ ميلادياً)، غير حاجب ─────────
+  // ميلاديّ = إبقاءٌ؛ هجريّ = يُحوَّل ويُحدَّث. الإغلاق أو «ميلادي» يُبقيه ميلادياً.
+  var calAskEl = null;
+  function closeCalAsk(){ if(calAskEl){ calAskEl.remove(); calAskEl = null; } }
+  function offerHijri(td){
+    closeCalAsk();
+    var tr = td.closest("tr"); if(!tr || tr.classList.contains("blank-line")) return;
+    var hand = td.querySelector(".hand"); if(!hand) return;
+    var r = calAskRect(td);
+    var box = document.createElement("div");
+    box.className = "cal-ask";
+    box.style.left = r.left + "px"; box.style.top = r.top + "px";
+    box.innerHTML = '<span class="cal-q">التقويم؟</span>' +
+      '<button type="button" data-cal="g">ميلادي</button>' +
+      '<button type="button" data-cal="h">هجري</button>';
+    document.body.appendChild(box);
+    calAskEl = box;
+    var done = false;
+    function pick(cal){
+      if(done) return; done = true; closeCalAsk();
+      if(cal !== "h") return;                       // ميلادي = لا تغيير
+      applyHijri(tr, td);
+    }
+    box.querySelector('[data-cal="g"]').addEventListener("click", function(){ pick("g"); });
+    box.querySelector('[data-cal="h"]').addEventListener("click", function(){ pick("h"); });
+    // إغلاق تلقائيّ بعد مهلة أو عند نقرٍ خارجه = إبقاء ميلاديّ
+    setTimeout(function(){ if(!done) pick("g"); }, 6000);
+  }
+  function calAskRect(td){
+    var b = td.getBoundingClientRect();
+    return { left: Math.max(8, b.left + b.width/2 - 84 + window.scrollX), top: b.bottom + 4 + window.scrollY };
+  }
+  async function applyHijri(tr, td){
+    if(tr._pending){ try{ await tr._pending; }catch(e){} }
+    var k = tr.dataset.k; if(k === "blank" || k === "pending") return;
+    var r = recOf(k); if(!r) return;
+    var iso = isoPart(r.date); if(!iso) return;
+    var val = "h:" + iso;
+    var c = colOf("date"); if(!c) return;
+    var upd = {}; upd[c.col] = val;
+    var res = await sb.from(board.table).update(upd).eq("id", k).select().single();
+    if(res.error){ toast("تعذّر ضبط التقويم", true); return; }
+    r.date = val;
+    var hand = td.querySelector(".hand"); if(hand){ hand.textContent = fmtDate(val); fit(td); settle(td); }
+  }
 
   // ── الشطب والحذف ─────────────────────────────────────────────────────────
   async function toggleStrike(k){
