@@ -237,6 +237,8 @@ h1{
    عمود الرتبة يقارب الاسم (أقصر بشوي)، والمعرّف يكفي ١٨ رقم ديسكورد. المجموع ١٠٠٪. */
 .col-serial{ width:7%; }
 .col-id{ width:18%; } .col-name{ width:24%; } .col-rank{ width:24%; } .col-date{ width:17%; } .col-status{ width:10%; }
+/* كتيب القوانين: القانون خانة واسعة، والملاحظة/الشرح أضيق */
+.col-law{ width:60%; } .col-expl{ width:33%; }
 
 /* خانة الترقيم — رقمٌ ثابت لا يُكتب: كبيرٌ أسود بأرقامٍ لاتينية، بلا إطار */
 td.col-serial{ text-align:center; }
@@ -1292,8 +1294,16 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
         { field:"status", col:"status",    ghost:"الحالة",      cls:"col-status", kind:"vocab", vocab:BAN_STATUSES },
       ],
     },
+    laws: {
+      key:"laws", tab:"كتيب القوانين", table:"laws", stamps:"laws_stamps",
+      headers:["القانون","ملاحظة — شرح"],
+      cols:[
+        { field:"law",  col:"law",  ghost:"يُكتب القانون…", cls:"col-law",  kind:"text" },
+        { field:"expl", col:"expl", ghost:"ملاحظة أو شرح",  cls:"col-expl", kind:"text" },
+      ],
+    },
   };
-  var BOARD_ORDER = ["agents", "banned"];
+  var BOARD_ORDER = ["laws", "agents", "banned"];   // كتيب القوانين فوق سجل العملاء
   var board = BOARDS.agents;
   function colOf(field){ for(var i=0;i<board.cols.length;i++) if(board.cols[i].field===field) return board.cols[i]; return null; }
   function dbCol(field){ var c = colOf(field); return c ? c.col : field; }
