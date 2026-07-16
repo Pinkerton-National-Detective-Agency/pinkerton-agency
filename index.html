@@ -2130,7 +2130,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   if(sealBtn) sealBtn.dataset.t = "seal:ميلتون";
   // ختم القبض = مربّع بسطرين (سطرٌ جديد يُميّزه عن الأختام البيضاوية)
   var boxBtn = document.querySelector(".box-btn");
-  if(boxBtn) boxBtn.dataset.t = "APPREHENDED\nتَمَّ القَبْضُ عَلَيْهِ";
+  if(boxBtn) boxBtn.dataset.t = "APPREHENDED\nتمّ القبض";
   Array.prototype.forEach.call(document.querySelectorAll(".stamp-btn"), function(b){
     b.addEventListener("click", function(){ arm(b, b.dataset.t, b.dataset.c); });
   });
