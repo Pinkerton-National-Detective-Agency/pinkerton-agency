@@ -491,6 +491,10 @@ tr[data-ink]::after{ background: var(--row-ink) !important; }   /* الشطب ي
 .stamp.eseal{ border:none; padding:0; width:104px; height:104px; line-height:0; }
 .stamp.eseal .eseal-svg{ display:block; width:100%; height:100%; pointer-events:none; }
 
+/* النجمة — ختمٌ بشكل نجمة، بلا إطار، بلونٍ من عجلة الألوان */
+.stamp.star{ border:none; padding:0; width:48px; height:48px; line-height:0; }
+.stamp.star .star-svg{ display:block; width:100%; height:100%; pointer-events:none; }
+
 body.arming .leaf{ cursor:crosshair; }
 body.arming .leaf::after{ pointer-events:none; }
 
@@ -762,10 +766,6 @@ body[data-gate] .booktabs, body[data-booting] .booktabs{ display:none; }
 .featured > *{ position:relative; z-index:1; }
 body[data-gate] .featured, body[data-booting] .featured{ display:none; }
 
-.feat-star{ position:absolute; top:-11px; inset-inline-start:50%; transform:translateX(-50%);
-  width:26px; height:26px; }
-.feat-star svg{ width:100%; height:100%; fill:var(--blood); stroke:#6b1212; stroke-width:.5;
-  filter:drop-shadow(0 1px 1px rgba(0,0,0,.3)); }
 .feat-title{ font-family:"Amiri",serif; font-weight:700; font-size:21px; color:var(--ink-press);
   margin:2px 0 4px; text-align:center; border-bottom:1px solid rgba(61,48,43,.3); padding-bottom:7px; width:100%; }
 
@@ -1066,9 +1066,6 @@ body[data-panel] .panel-back{ display:flex; }
 
 <!-- موظف الأسبوع — بطاقةٌ من ورق الوكالة، تحت التبويبات على اليسار -->
 <aside class="featured" id="featured">
-  <div class="feat-star" aria-hidden="true">
-    <svg viewBox="0 0 24 24"><path d="M12 2.2l2.95 6.32 6.85.78-5.08 4.66 1.38 6.74L12 17.9 5.9 21.5l1.38-6.74L2.2 9.3l6.85-.78z"/></svg>
-  </div>
   <h3 class="feat-title">موظف الأسبوع</h3>
   <div class="feat-photo" id="featPhoto" title="انقر لتغيير الصورة">
     <svg class="feat-silhouette" viewBox="0 0 64 64" aria-hidden="true"><g fill="none" stroke="#3D302B" stroke-width="1.4"><circle cx="32" cy="24" r="11"/><path d="M12 56c0-12 9-19 20-19s20 7 20 19"/></g></svg>
@@ -1207,6 +1204,8 @@ body[data-panel] .panel-back{ display:flex; }
     <button type="button" class="stamp-btn seal-btn" style="--c:#7A2230" data-c="#8A1C2C">ختم رئاسي</button>
     <!-- ختم القبض — مربّع بحبرٍ أزرق، سطران؛ النصّ يُضبَط في JS ليحمل سطراً جديداً -->
     <button type="button" class="stamp-btn box-btn" style="--c:#33489C" data-c="#123CDA">تمّ القبض</button>
+    <!-- النجمة — تأخذ لونها من عجلة الألوان أدناه، فتُضرَب بأيّ لون -->
+    <button type="button" class="stamp-btn star-btn" style="--c:#A3201F">★ نجمة</button>
   </div>
 
   <div class="side-free side-write">
@@ -2059,10 +2058,15 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     pageStamps.forEach(function(st){
       var el = document.createElement("span");
       var eseal = String(st.t).indexOf("seal:") === 0;   // الختم الرئاسي = خاتم العين
-      var box   = !eseal && String(st.t).indexOf("\n") >= 0;   // ختمٌ مربّع بسطرين
-      el.className = "stamp" + (st.id === selectedStampId ? " selected" : "") + (eseal ? " eseal" : (box ? " box" : ""));
+      var star  = String(st.t) === "star";                // نجمة
+      var box   = !eseal && !star && String(st.t).indexOf("\n") >= 0;   // ختمٌ مربّع بسطرين
+      el.className = "stamp" + (st.id === selectedStampId ? " selected" : "") +
+                     (eseal ? " eseal" : (star ? " star" : (box ? " box" : "")));
       if(eseal){
         el.innerHTML = sealSVG(String(st.t).slice(5), st.id);
+      }else if(star){
+        el.innerHTML = '<svg viewBox="0 0 24 24" class="star-svg" aria-hidden="true">' +
+          '<path fill="currentColor" stroke="currentColor" stroke-width="0.4" d="M12 2.2l2.95 6.32 6.85.78-5.08 4.66 1.38 6.74L12 17.9 5.9 21.5l1.38-6.74L2.2 9.3l6.85-.78z"/></svg>';
       }else if(box){
         String(st.t).split("\n").forEach(function(line){
           var sp = document.createElement("span");
@@ -2140,8 +2144,11 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   var boxBtn = document.querySelector(".box-btn");
   if(boxBtn) boxBtn.dataset.t = "APPREHENDED\nتمّ القبض";
   Array.prototype.forEach.call(document.querySelectorAll(".stamp-btn"), function(b){
+    if(b.classList.contains("star-btn")) return;    // النجمة تأخذ لونها من العجلة، لا من data-c
     b.addEventListener("click", function(){ arm(b, b.dataset.t, b.dataset.c); });
   });
+  var starBtn = document.querySelector(".star-btn");
+  if(starBtn) starBtn.addEventListener("click", function(){ arm(starBtn, "star", stampColourEl.value); });
   armEl.addEventListener("click", function(){ arm(armEl, (stampTextEl.value || "").trim() || "سُرِّح", stampColourEl.value); });
 
   // أزرار المقاس المُقبِل
