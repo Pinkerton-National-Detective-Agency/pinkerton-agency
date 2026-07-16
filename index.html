@@ -608,8 +608,11 @@ body.arming .leaf::after{ pointer-events:none; }
   isolation:isolate;
 }
 .sidetools::before{ content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
-  filter:url(#grain); opacity:.5; mix-blend-mode:multiply; z-index:-1; }
-.sidetools > *{ position:relative; }
+  filter:url(#grain); opacity:.55; mix-blend-mode:multiply; z-index:-1; }
+/* بقع التقادم — كما في الدفتر، كي لا تبدو نظيفةً كأنّها ليست ورقاً */
+.sidetools::after{ content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  filter:url(#foxing); opacity:.34; mix-blend-mode:multiply; z-index:-1; }
+.sidetools > *{ position:relative; z-index:1; }
 body[data-gate] .sidetools, body[data-booting] .sidetools{ display:none; }
 body:not([data-role="owner"]):not([data-role="editor"]) .sidetools .side-write{ display:none; }
 body:not([data-role="owner"]) .sidetools #ownerbtn{ display:none; }
@@ -678,7 +681,7 @@ body[data-role="reader"] .sidetools{ display:none; }
 body[data-gate] .booktabs, body[data-booting] .booktabs{ display:none; }
 
 .booktab{
-  position:relative; cursor:pointer; text-align:right;
+  position:relative; cursor:pointer; text-align:right; isolation:isolate;
   font-family:"Amiri",serif; font-weight:700; font-size:15px; letter-spacing:0;
   color:var(--ink); background-color:var(--paper-shade);
   background-image: linear-gradient(to left, rgba(120,92,64,.28) 0, rgba(120,92,64,0) 22px);
@@ -689,6 +692,9 @@ body[data-gate] .booktabs, body[data-booting] .booktabs{ display:none; }
   transition: transform .14s, background-color .14s, color .14s;
   transform: translateX(-6px);               /* مطويٌّ قليلاً تحت الدفتر */
 }
+/* بقع التقادم على اللسان — كي يبدو ورقاً لا لوحاً نظيفاً */
+.booktab::before{ content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  filter:url(#foxing); opacity:.3; mix-blend-mode:multiply; z-index:0; }
 .booktab:hover{ transform: translateX(2px); background-color:var(--paper-mid); }
 .booktab.active{
   transform: translateX(10px);               /* النشط يبرز نحو القارئ */
@@ -732,7 +738,11 @@ body[data-gate] .booktabs, body[data-booting] .booktabs{ display:none; }
   font-family:"Amiri",serif; letter-spacing:0; color:var(--ink-press); isolation:isolate;
 }
 .featured::before{ content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
-  filter:url(#grain); opacity:.5; mix-blend-mode:multiply; z-index:-1; }
+  filter:url(#grain); opacity:.55; mix-blend-mode:multiply; z-index:-1; }
+/* بقع التقادم — نفس بقع الدفتر */
+.featured::after{ content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  filter:url(#foxing); opacity:.36; mix-blend-mode:multiply; z-index:-1; }
+.featured > *{ position:relative; z-index:1; }
 body[data-gate] .featured, body[data-booting] .featured{ display:none; }
 
 .feat-star{ position:absolute; top:-11px; inset-inline-start:50%; transform:translateX(-50%);
