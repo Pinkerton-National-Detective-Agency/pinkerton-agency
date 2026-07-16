@@ -1159,6 +1159,38 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     if(isOwner()) wireOwnerPanel();
     await render();
     if(document.fonts && document.fonts.ready) document.fonts.ready.then(() => paint());
+    subscribeLive();
+  }
+
+  // ── التحديث الفوري ─────────────────────────────────────────────────────────
+  // الحدث مجرّد إشارة «أعد الجلب»؛ البيانات نفسها تعبر القناة المحمية بـ RLS (fetchPage).
+  // ⚠ أحداث الحذف لا تخضع لـ RLS في Realtime، فما يخرج منها إلا الرقم التسلسلي (PK)
+  //   تحت هوية النسخ الافتراضية — لا اسم ولا معرّف ديسكورد. ولذلك نتجاهل الحمولة تماماً
+  //   ونكتفي بإعادة الجلب: القارئ غير المصرَّح لا يجني من الاشتراك إلا أرقاماً عمياء.
+  // ⚠ لا نُعيد الطلاء والمحرّر يكتب، ولا واللوحة مفتوحة، ولا والختم في اليد — بل نؤجّل.
+  var liveT = null, liveDirty = false;
+  function editingNow(){
+    var a = document.activeElement;
+    return !!(a && a.closest && a.closest("#rows .hand"));
+  }
+  async function refreshLive(){
+    if(editingNow() || arming || document.body.hasAttribute("data-panel")){ liveDirty = true; return; }
+    liveDirty = false;
+    await render();
+  }
+  function scheduleLive(){
+    if(liveT) clearTimeout(liveT);
+    liveT = setTimeout(refreshLive, 500);   // نجمّع رشقة تغييرات في إعادة جلبٍ واحدة
+  }
+  function subscribeLive(){
+    try{
+      sb.channel("roster-live")
+        .on("postgres_changes", { event:"*", schema:"public", table:"roster" }, scheduleLive)
+        .on("postgres_changes", { event:"*", schema:"public", table:"roster_stamps" }, scheduleLive)
+        .subscribe();
+    }catch(e){ /* الترابط اختياريّ: لو تعذّر يبقى التحديث بالتحديث اليدويّ */ }
+    // لو أُجِّل تحديثٌ لأننا كنّا نكتب، نفّذه فور الفراغ
+    document.addEventListener("visibilitychange", function(){ if(!document.hidden && liveDirty) refreshLive(); });
   }
 
   loginEl.onclick = async () => {
@@ -1335,7 +1367,11 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
 
   rowsEl.addEventListener("focusout", function(ev){
     var hand = ev.target.closest(".hand"); if(!hand || !canWrite()) return;
-    commit(hand);
+    // ننتظر خطوةً حتى يستقرّ التركيز: إن انتقل لخانةٍ أخرى فلا نُعيد الجلب (يقطع الكتابة)؛
+    // وإن خرج المحرّر من الجدول تماماً وكان ثمّة تحديثٌ مؤجَّل، ننفّذه.
+    Promise.resolve(commit(hand)).then(function(){
+      setTimeout(function(){ if(liveDirty && !editingNow()) refreshLive(); }, 60);
+    });
   });
 
   rowsEl.addEventListener("input", function(ev){
