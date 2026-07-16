@@ -82,6 +82,7 @@
      كل ما بُني. #3D302B يُرى أسود تماماً وينتمي للصفحة. */
   --rule-line:    #3D302B;
   --stamp-red:    #A3201F;
+  --blood:        #8A1717;     /* حبر الدم — لرقم الترقيم المربّع، أوضح من الحبر البنّي */
   --stamp-violet: #5C4A63;     /* 1890s rubber pads were aniline dye, commonly violet — not black */
   --graphite:     #6E6A62;     /* the archivist's 1940s pencil. The only other cool value. */
 }
@@ -237,11 +238,17 @@ h1{
 .col-serial{ width:7%; }
 .col-id{ width:18%; } .col-name{ width:24%; } .col-rank{ width:24%; } .col-date{ width:17%; } .col-status{ width:10%; }
 
-/* خانة المسلسل — رقمٌ ثابت لا يُكتب، متمركز بحبرٍ باهت */
+/* خانة الترقيم — رقمٌ ثابت لا يُكتب، في مربّعٍ بحبر الدم ليَبين */
 td.col-serial{ text-align:center; }
-.serial{ font-family:"Old Standard TT",Georgia,serif; font-size:15px; color:var(--ink-pale);
-  opacity:.85; direction:ltr; unicode-bidi:isolate; }
-.blank-line .serial{ opacity:.32; }
+.serial{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:34px; height:34px; box-sizing:border-box;
+  border:1.6px solid var(--blood); border-radius:2px;   /* مربّع */
+  font-family:"Old Standard TT",Georgia,serif; font-weight:700; font-size:18px;
+  color:var(--blood); direction:ltr; unicode-bidi:isolate;
+  box-shadow: inset 0 0 0 1px rgba(138,23,23,.12);
+}
+.blank-line .serial{ opacity:.3; }
 
 /* رقم المعرف = معرّف ديسكورد: ١٧–١٩ رقماً تُطابَق بالعين حرفاً حرفاً.
    ⚠ كان بخط Herr Von Muellerhoff الراقص — وهو خط توقيعات مبنيّ على تواقيع أمريكية حقيقية،
@@ -1300,7 +1307,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   function buildThead(){
     var tr = document.createElement("tr");
     var sTh = document.createElement("th");            // عمود المسلسل — أوّلاً (يمين RTL)
-    sTh.setAttribute("scope","col"); sTh.className = "col-serial"; sTh.textContent = "مسلسل";
+    sTh.setAttribute("scope","col"); sTh.className = "col-serial"; sTh.textContent = "ترقيم";
     tr.appendChild(sTh);
     board.cols.forEach(function(c, i){
       var th = document.createElement("th");
