@@ -475,14 +475,17 @@ tr[data-ink]::after{ background: var(--row-ink) !important; }   /* الشطب ي
 .stamp:hover{ outline:1px dashed currentColor; outline-offset:4px; }
 .stamp.selected{ outline:2px dashed currentColor; outline-offset:5px; }
 
-/* الختم الرئاسي — خاتمٌ رسميّ بحلقةٍ مزدوجة وسطرين، أرحب من أختام الحالة */
+/* ختمٌ نصّيٌّ بسطرين (احتياطيّ لأيّ ختم متعدّد الأسطر) */
 .stamp.seal{
   border:3px double currentColor; border-radius:50%/44%;
   padding:12px 26px; line-height:1.5; font-size:15px; text-align:center; white-space:normal;
 }
 .stamp.seal::before{ content:""; position:absolute; inset:4px; border:1px solid currentColor;
   border-radius:inherit; opacity:.55; pointer-events:none; }
-.stamp.seal br{ line-height:0; }
+
+/* الختم الرئاسي — خاتم العين المرسوم (SVG)، بلا إطار CSS: الدوائر من الرسم نفسه */
+.stamp.eseal{ border:none; padding:0; width:104px; height:104px; line-height:0; }
+.stamp.eseal .eseal-svg{ display:block; width:100%; height:100%; pointer-events:none; }
 
 body.arming .leaf{ cursor:crosshair; }
 body.arming .leaf::after{ pointer-events:none; }
@@ -2017,14 +2020,36 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   function szPct(v){ return arNum(Math.round(v * 100)) + "٪"; }
   function updateSzShow(){ szShowEl.textContent = szPct(armSize); }
 
+  // خاتم العين — نسخةٌ من شعار الوكالة (العين + WE NEVER SLEEP)، وبالنصّ اسمٌ بدل الشعار
+  function sealSVG(center, uid){
+    var rim = "srim" + uid;
+    return '<svg viewBox="0 0 104 104" class="eseal-svg" aria-hidden="true">' +
+      '<defs><path id="' + rim + '" d="M 52,52 m -40,0 a 40,40 0 1,1 80,0" fill="none"/></defs>' +
+      '<circle cx="52" cy="52" r="50" fill="none" stroke="currentColor" stroke-width="2"/>' +
+      '<circle cx="52" cy="52" r="46" fill="none" stroke="currentColor" stroke-width="1"/>' +
+      '<g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
+        '<path d="M 30 42 Q 52 27 74 42 Q 52 57 30 42 Z"/>' +
+        '<path d="M 33.5 39.5 Q 52 25.5 70.5 39.5" opacity=".62"/>' +
+        '<circle cx="52" cy="42" r="8"/><circle cx="52" cy="42" r="3.4" fill="currentColor" stroke="none"/>' +
+        '<path d="M 36 35 l -3.2 -3.4  M 44 30.8 l -1.8 -4  M 52 29.2 l 0 -4.4  M 60 30.8 l 1.8 -4  M 68 35 l 3.2 -3.4"/>' +
+      '</g>' +
+      '<text x="52" y="74" text-anchor="middle" font-family="Amiri,serif" font-weight="700" font-size="13" fill="currentColor">' + esc(center) + '</text>' +
+      '<text font-family="Old Standard TT, Georgia, serif" font-size="7.6" letter-spacing="1.5" fill="currentColor">' +
+        '<textPath href="#' + rim + '" startOffset="50%" text-anchor="middle">WE NEVER SLEEP</textPath></text>' +
+    '</svg>';
+  }
+
   function renderStamps(){
     stampsEl.textContent = "";
     if(!canWrite()) return;
     pageStamps.forEach(function(st){
       var el = document.createElement("span");
-      var multi = String(st.t).indexOf("\n") >= 0;   // الختم الرئاسي: سطران = خاتم رسميّ
-      el.className = "stamp" + (st.id === selectedStampId ? " selected" : "") + (multi ? " seal" : "");
-      if(multi){
+      var eseal = String(st.t).indexOf("seal:") === 0;   // الختم الرئاسي = خاتم العين
+      var multi = !eseal && String(st.t).indexOf("\n") >= 0;
+      el.className = "stamp" + (st.id === selectedStampId ? " selected" : "") + (eseal ? " eseal" : (multi ? " seal" : ""));
+      if(eseal){
+        el.innerHTML = sealSVG(String(st.t).slice(5), st.id);
+      }else if(multi){
         String(st.t).split("\n").forEach(function(line, i){
           if(i) el.appendChild(document.createElement("br"));
           el.appendChild(document.createTextNode(line));
@@ -2091,8 +2116,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     document.body.classList.add("arming"); btn.classList.add("armed");
   }
   // الختم الرئاسي: سطران. نضبط نصّه في JS ليحمل سطراً جديداً (يصعب في سمة HTML)
+  // الختم الرئاسي = خاتم العين، بالنصّ «ميلتون». السابقة seal: تُميّزه عند الرسم.
   var sealBtn = document.querySelector(".seal-btn");
-  if(sealBtn) sealBtn.dataset.t = "رئيس البنكرتون\nاندرو ميلتون";
+  if(sealBtn) sealBtn.dataset.t = "seal:ميلتون";
   Array.prototype.forEach.call(document.querySelectorAll(".stamp-btn"), function(b){
     b.addEventListener("click", function(){ arm(b, b.dataset.t, b.dataset.c); });
   });
