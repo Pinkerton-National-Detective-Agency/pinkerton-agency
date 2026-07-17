@@ -2,6 +2,7 @@ banned.sql
 featured.sql
 featured-stars.sql
 laws.sql
+leaders.sql
 realtime.sql
 schema.sql
 seed.sql

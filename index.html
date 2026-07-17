@@ -812,6 +812,66 @@ body.arming .featured .feat-stamps{ pointer-events:none !important; }
   .featured{ position:static; width:min(320px,92%); margin:0 auto 12px; top:auto; }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   القيادة — لوحة المسؤولين الثلاثة. تحلّ محلّ الجدول حين يكون التبويب نشطاً؛
+   وحينها يُخفى موظف الأسبوع والمكتب والأدوات (انظر body[data-leaders] أدناه).
+   ═══════════════════════════════════════════════════════════════════════════ */
+.leaders{ display:none; position:relative; z-index:2; padding:6px 8px 10px; }
+/* حين تكون لوحة القيادة نشطة: أخفِ الجدول وأختامه وبطاقة موظف الأسبوع وأدواتهما، وأظهر البطاقات */
+body[data-leaders] .featured,
+body[data-leaders] .register-wrap,
+body[data-leaders] .stamp-layer,
+body[data-leaders] .pager,
+body[data-leaders] .rule-minor,
+body[data-leaders] .vocab,
+body[data-leaders] .rubric-foot,
+body[data-leaders] .imprint,
+body[data-leaders] .pencil-help,
+body[data-leaders] .sidetools{ display:none !important; }
+/* المكتب يبقى ظاهراً من أجل «خروج» والهويّة فقط — نُخفي أدوات الجدول التي بداخله */
+body[data-leaders] .desk > #add,
+body[data-leaders] .desk > label,
+body[data-leaders] .desk > #q,
+body[data-leaders] .desk > #hit,
+body[data-leaders] .desk > #jump,
+body[data-leaders] .desk > #ink,
+body[data-leaders] .desk > #inkreset,
+body[data-leaders] .desk > .count,
+body[data-leaders] .desk > .desk-sep{ display:none !important; }
+body[data-leaders] .leaders{ display:block; }
+
+.leaders-head{ font-family:"Amiri",serif; font-weight:700; font-size:20px; color:var(--ink-press);
+  text-align:center; letter-spacing:0; opacity:.85; margin:2px 0 20px;
+  padding-bottom:9px; border-bottom:1px solid rgba(61,48,43,.22); }
+.leaders-row{ display:flex; flex-wrap:wrap; justify-content:center; align-items:flex-start; gap:38px; }
+.lead{ display:flex; flex-direction:column; align-items:center; gap:12px; width:214px; }
+
+/* مساحة الصورة — إطار بورتريه بحبرٍ، بداخله ظلٌّ حين تخلو (كبطاقة موظف الأسبوع) */
+.lead-photo{ position:relative; width:202px; height:238px; border:1.5px solid rgba(61,48,43,.55);
+  border-radius:2px; background:rgba(255,252,245,.35); overflow:hidden; display:flex;
+  align-items:center; justify-content:center; box-shadow:inset 0 0 0 3px rgba(120,92,64,.14); }
+.lead-photo .feat-silhouette{ width:98px; height:98px; opacity:.4; }
+.lead-photo img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+body[data-role="owner"] .lead-photo, body[data-role="editor"] .lead-photo{ cursor:pointer; }
+body[data-role="owner"] .lead-photo:hover .feat-photo-hint,
+body[data-role="editor"] .lead-photo:hover .feat-photo-hint{ opacity:1; }
+
+/* المنصب — سطرٌ رسميّ مطبوع (أميري) */
+.lead-role{ font-family:"Amiri",serif; font-weight:700; font-size:19px; color:var(--ink-press);
+  text-align:center; min-height:24px; width:100%; outline:none; letter-spacing:0;
+  border-bottom:1px solid rgba(61,48,43,.26); padding-bottom:7px; }
+/* الاسم — بحبر الرقعة كالدفتر، مع نزّ الحبر */
+.lead-name{ font-family:"Aref Ruqaa","Traditional Arabic",serif; font-weight:700; font-size:25px;
+  color:var(--ink); filter:url(#inkbleed); transform:rotate(-.5deg);
+  text-align:center; min-height:30px; width:100%; outline:none; }
+@supports (font-palette: --x){
+  .lead-name{ font-family:"Aref Ruqaa Ink","Aref Ruqaa",serif; font-palette:--dip3; }
+}
+.lead-role:empty::before, .lead-name:empty::before{ content:attr(data-ghost); color:var(--graphite);
+  opacity:.4; font-family:"Amiri",serif; font-weight:400; filter:none; }
+.lead-role[contenteditable], .lead-name[contenteditable]{ cursor:text; }
+.lead-role[contenteditable]:focus, .lead-name[contenteditable]:focus{ box-shadow:inset 0 -1px 0 0 var(--ink); }
+
 .pager{ display:flex; align-items:center; justify-content:center; gap:16px;
         margin-top:12px; position:relative; z-index:2; }
 .pager .folio{ font-family:"Amiri",serif; font-size:13px; color:var(--ink-press); opacity:.7; letter-spacing:0; }
@@ -1141,6 +1201,41 @@ body[data-panel] .panel-back{ display:flex; }
 
   <div class="rule-major"></div>
 
+  <!-- القيادة — مسؤولو الوكالة الثلاثة. تظهر بدل الجدول حين يكون التبويب «القيادة» نشطاً. -->
+  <section class="leaders" id="leaders" aria-label="قيادة الوكالة">
+    <div class="leaders-head">قيادة الوكالة</div>
+    <div class="leaders-row">
+      <div class="lead" data-slot="1">
+        <div class="lead-photo" data-slot="1" title="انقر لتغيير الصورة">
+          <svg class="feat-silhouette" viewBox="0 0 64 64" aria-hidden="true"><g fill="none" stroke="#3D302B" stroke-width="1.4"><circle cx="32" cy="24" r="11"/><path d="M12 56c0-12 9-19 20-19s20 7 20 19"/></g></svg>
+          <img alt="" hidden>
+          <div class="feat-photo-hint side-write">انقر للرفع</div>
+        </div>
+        <div class="lead-role" data-slot="1" data-ghost="المنصب"></div>
+        <div class="lead-name" data-slot="1" data-ghost="الاسم"></div>
+      </div>
+      <div class="lead" data-slot="2">
+        <div class="lead-photo" data-slot="2" title="انقر لتغيير الصورة">
+          <svg class="feat-silhouette" viewBox="0 0 64 64" aria-hidden="true"><g fill="none" stroke="#3D302B" stroke-width="1.4"><circle cx="32" cy="24" r="11"/><path d="M12 56c0-12 9-19 20-19s20 7 20 19"/></g></svg>
+          <img alt="" hidden>
+          <div class="feat-photo-hint side-write">انقر للرفع</div>
+        </div>
+        <div class="lead-role" data-slot="2" data-ghost="المنصب"></div>
+        <div class="lead-name" data-slot="2" data-ghost="الاسم"></div>
+      </div>
+      <div class="lead" data-slot="3">
+        <div class="lead-photo" data-slot="3" title="انقر لتغيير الصورة">
+          <svg class="feat-silhouette" viewBox="0 0 64 64" aria-hidden="true"><g fill="none" stroke="#3D302B" stroke-width="1.4"><circle cx="32" cy="24" r="11"/><path d="M12 56c0-12 9-19 20-19s20 7 20 19"/></g></svg>
+          <img alt="" hidden>
+          <div class="feat-photo-hint side-write">انقر للرفع</div>
+        </div>
+        <div class="lead-role" data-slot="3" data-ghost="المنصب"></div>
+        <div class="lead-name" data-slot="3" data-ghost="الاسم"></div>
+      </div>
+    </div>
+    <input type="file" id="leadFile" accept="image/*" hidden>
+  </section>
+
   <div class="register-wrap">
     <div class="register-bg"></div>
     <table class="register">
@@ -1325,7 +1420,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
         pendingList = $("pendingList"), memberList = $("memberList"), toastEl = $("toast"),
         featPhotoEl = $("featPhoto"), featImgEl = $("featImg"), featFileEl = $("featFile"),
         featNameEl = $("featName"), featAchEl = $("featAch"),
-        featuredEl = $("featured"), featStampsEl = $("featStamps");
+        featuredEl = $("featured"), featStampsEl = $("featStamps"),
+        leadersEl = $("leaders"), leadFileEl = $("leadFile");
 
   const esc = s => String(s == null ? "" : s).replace(/[<&>"]/g, c => ({ "<":"&lt;","&":"&amp;",">":"&gt;",'"':"&quot;" }[c]));
 
@@ -1395,6 +1491,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   // كل سجلّ = جدولٌ في القاعدة + أعمدةٌ + أختامه. الأدوار عامّة، فكلّها بنفس الصلاحيات.
   // kind: badge=رقم لاتيني | name=اسم بأيّ خطّ | vocab=يُردّ لصفةٍ معتمدة | date=تاريخ | text=نصّ حرّ
   var BOARDS = {
+    // القيادة — لوحةٌ خاصّة (kind:leaders): بطاقاتٌ لا جدول. لا table/stamps/cols لها.
+    leadership: { key:"leadership", tab:"القيادة", kind:"leaders" },
     agents: {
       key:"agents", tab:"سجل العملاء", table:"roster", stamps:"roster_stamps",
       headers:["رقم المعرف","الاسم كامل","رتبة العميل","تاريخ الالتحاق","حالة الخدمة"],
@@ -1426,9 +1524,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
       ],
     },
   };
-  var BOARD_ORDER = ["laws", "agents", "banned"];   // كتيب القوانين فوق سجل العملاء
+  var BOARD_ORDER = ["leadership", "laws", "agents", "banned"];   // القيادة ثمّ القوانين فوق سجل العملاء
   var board = BOARDS.agents;
-  function colOf(field){ for(var i=0;i<board.cols.length;i++) if(board.cols[i].field===field) return board.cols[i]; return null; }
+  function colOf(field){ if(!board.cols) return null; for(var i=0;i<board.cols.length;i++) if(board.cols[i].field===field) return board.cols[i]; return null; }
   function dbCol(field){ var c = colOf(field); return c ? c.col : field; }
 
   // ── التبويبات والترويسة الديناميكية ─────────────────────────────────────────
@@ -1459,13 +1557,28 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
       bookTabsEl.appendChild(el);
     });
   }
+  // إظهار/إخفاء العرض حسب نوع السجلّ: القيادة بطاقاتٌ، والبقيّة جدول.
+  function applyView(){
+    if(board.kind === "leaders") document.body.setAttribute("data-leaders", "1");
+    else document.body.removeAttribute("data-leaders");
+  }
   async function switchBoard(key){
     if(!BOARDS[key] || key === board.key) return;
     board = BOARDS[key];
     epoch++;                       // يُبطل أيّ جلبٍ/إدراجٍ من السجلّ السابق ما زال طائراً
     page = 0; selectedStampId = null; lastMatchId = 0;
+    disarm(); closeCalAsk();       // لا يبقى ختمٌ محمولٌ ولا نافذةُ تقويمٍ يتيمةٌ عبر التبديل
     if(qEl) qEl.value = ""; if(hitEl) hitEl.textContent = "";
-    buildTabs(); buildThead();
+    buildTabs(); applyView();
+    if(board.kind === "leaders"){
+      // لوحة القيادة: لا جدول ولا اشتراك جدوليّ. نوقف قناة السجلّ السابق كي لا
+      // يُطلق حدثٌ متأخّرٌ إعادة جلبٍ على جدولٍ لا وجود له في هذه اللوحة.
+      if(liveChannel){ sb.removeChannel(liveChannel); liveChannel = null; }
+      loadLeaders();
+      flip();
+      return;
+    }
+    buildThead();
     subscribeLive();              // نشترك على جدولَي السجلّ الجديد
     await render();
     flip();
@@ -1537,7 +1650,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     whoEl.textContent = displayName(session.user) + " · " + roleLabel(role);
     if(isOwner()) wireOwnerPanel();
     wireFeatured();
-    buildTabs(); buildThead();
+    wireLeaders();
+    buildTabs(); buildThead(); applyView();
     await render();
     if(document.fonts && document.fonts.ready) document.fonts.ready.then(() => paint());
     subscribeLive();
@@ -1657,6 +1771,89 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     if(await saveFeatured({ photo_url: url })){ showFeatured({ name:featNameEl.textContent, achievements:featAchEl.textContent, photo_url:url }); toast("حُدِّثت الصورة"); }
   }
 
+  // ── القيادة — مسؤولو الوكالة الثلاثة ───────────────────────────────────────
+  // ثلاثة صفوف ثابتة (slot 1..3): منصب + اسم + صورة. تُحفظ في جدول leaders،
+  // والصور في مخزن leaders. نفس حماية RLS (قراءة للمصرَّح، كتابة للمحرّرين).
+  function renderLeaders(rows){
+    if(!leadersEl) return;
+    var by = {}; (rows || []).forEach(function(r){ by[r.slot] = r; });
+    [1, 2, 3].forEach(function(slot){
+      var r = by[slot] || {};
+      var card = leadersEl.querySelector('.lead[data-slot="' + slot + '"]'); if(!card) return;
+      var roleEl = card.querySelector(".lead-role"), nameEl = card.querySelector(".lead-name"),
+          img = card.querySelector(".lead-photo img");
+      // لا نكتب فوق خانةٍ يحرّرها المستخدم الآن
+      if(document.activeElement !== roleEl) roleEl.textContent = r.role || "";
+      if(document.activeElement !== nameEl) nameEl.textContent = r.name || "";
+      if(r.photo_url){ img.src = r.photo_url; img.hidden = false; }
+      else{ img.removeAttribute("src"); img.hidden = true; }
+    });
+  }
+  async function loadLeaders(){
+    try{
+      var res = await sb.from("leaders").select("*").order("slot", { ascending:true });
+      if(!res.error) renderLeaders(res.data || []);
+    }catch(e){}
+  }
+  async function saveLeader(slot, patch){
+    var res = await sb.from("leaders").update(patch).eq("slot", slot).select().single();
+    if(res.error){ toast("تعذّر الحفظ: " + res.error.message, true); return false; }
+    return true;
+  }
+  var leadWired = false, leadUploadSlot = null;
+  function wireLeaders(){
+    if(!leadersEl) return;
+    loadLeaders();
+    if(leadWired) return; leadWired = true;
+
+    if(canWrite()){
+      [1, 2, 3].forEach(function(slot){
+        var card = leadersEl.querySelector('.lead[data-slot="' + slot + '"]'); if(!card) return;
+        var roleEl = card.querySelector(".lead-role"), nameEl = card.querySelector(".lead-name"),
+            photo = card.querySelector(".lead-photo");
+        roleEl.setAttribute("contenteditable", "plaintext-only");
+        nameEl.setAttribute("contenteditable", "plaintext-only");
+        roleEl.addEventListener("blur", function(){ saveLeader(slot, { role: roleEl.textContent.trim() }); });
+        nameEl.addEventListener("blur", function(){ saveLeader(slot, { name: nameEl.textContent.trim() }); });
+        [roleEl, nameEl].forEach(function(el){
+          el.addEventListener("paste", function(ev){
+            ev.preventDefault();
+            var t = (ev.clipboardData || window.clipboardData).getData("text").replace(/\s+/g, " ");
+            document.execCommand("insertText", false, t);
+          });
+        });
+        photo.addEventListener("click", function(){ leadUploadSlot = slot; leadFileEl.click(); });
+      });
+      leadFileEl.addEventListener("change", function(){
+        var file = leadFileEl.files && leadFileEl.files[0];
+        if(!file || !leadUploadSlot){ leadFileEl.value = ""; return; }
+        if(file.size > 5 * 1024 * 1024){ toast("الصورة أكبر من ٥ ميغا", true); leadFileEl.value = ""; return; }
+        uploadLeaderPhoto(leadUploadSlot, file);
+      });
+    }
+
+    // تحديثٌ فوريّ للبطاقات (لا نُعيد التحميل والمحرّر يكتب في خانة)
+    try{
+      sb.channel("leaders-live")
+        .on("postgres_changes", { event:"*", schema:"public", table:"leaders" }, function(){
+          var a = document.activeElement;
+          if(a && a.classList && (a.classList.contains("lead-role") || a.classList.contains("lead-name"))) return;
+          loadLeaders();
+        }).subscribe();
+    }catch(e){}
+  }
+  async function uploadLeaderPhoto(slot, file){
+    var ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+    var path = "leader-" + slot + "." + ext;
+    toast("جارٍ رفع الصورة…");
+    var up = await sb.storage.from("leaders").upload(path, file, { upsert:true, cacheControl:"0", contentType:file.type });
+    leadFileEl.value = ""; leadUploadSlot = null;
+    if(up.error){ toast("تعذّر رفع الصورة: " + up.error.message, true); return; }
+    var pub = sb.storage.from("leaders").getPublicUrl(path);
+    var url = pub.data.publicUrl + "?t=" + Date.now();     // كسر التخزين المؤقّت
+    if(await saveLeader(slot, { photo_url: url })){ loadLeaders(); toast("حُدِّثت الصورة"); }
+  }
+
   // ── التحديث الفوري ─────────────────────────────────────────────────────────
   // الحدث مجرّد إشارة «أعد الجلب»؛ البيانات نفسها تعبر القناة المحمية بـ RLS (fetchPage).
   // ⚠ أحداث الحذف لا تخضع لـ RLS في Realtime، فما يخرج منها إلا الرقم التسلسلي (PK)
@@ -1669,6 +1866,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     return !!(a && a.closest && a.closest("#rows .hand"));
   }
   async function refreshLive(){
+    if(board.kind === "leaders"){ liveDirty = false; return; }   // القيادة بلا جدول تُجلَب
     if(editingNow() || arming || document.body.hasAttribute("data-panel")){ liveDirty = true; return; }
     liveDirty = false;
     await render();
@@ -1725,6 +1923,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   }
 
   async function render(focus){
+    if(board.kind === "leaders") return;   // القيادة تُرسَم كبطاقات لا كجدول
     const e = epoch;
     if(page < 0) page = 0;
     await fetchPage(e);
