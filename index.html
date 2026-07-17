@@ -1674,7 +1674,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
         { field:"id",     col:"badge",  ghost:"الرقم",       cls:"col-id",     kind:"badge" },
         { field:"name",   col:"name",   ghost:"الاسم",       cls:"col-name",           kind:"name"  },
         { field:"rank",   col:"rank",   ghost:"الرتبة",      cls:"col-rank",   kind:"vocab", vocab:RANKS },
-        { field:"date",   col:"joined", ghost:"يوم/شهر/سنة", cls:"col-date",   kind:"date"  },
+        { field:"date",   col:"joined", ghost:"يوم/شهر/سنة هـ", cls:"col-date",   kind:"date"  },
         { field:"status", col:"status", ghost:"الحالة",      cls:"col-status", kind:"vocab", vocab:STATUSES },
       ],
     },
@@ -1685,7 +1685,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
         { field:"id",     col:"badge",     ghost:"الرقم",       cls:"col-id",     kind:"badge" },
         { field:"name",   col:"name",      ghost:"الاسم",       cls:"col-name",           kind:"name"  },
         { field:"reason", col:"reason",    ghost:"السبب",       cls:"col-rank",   kind:"text"  },
-        { field:"date",   col:"banned_on", ghost:"يوم/شهر/سنة", cls:"col-date",   kind:"date"  },
+        { field:"date",   col:"banned_on", ghost:"يوم/شهر/سنة هـ", cls:"col-date",   kind:"date"  },
         { field:"status", col:"status",    ghost:"الحالة",      cls:"col-status", kind:"vocab", vocab:BAN_STATUSES },
       ],
     },
@@ -2542,8 +2542,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
 
     if(c.kind === "vocab") val = canon(val, c.vocab);
     if(c.kind === "date" && val){
+      // التواريخ دائماً هجريّة: نفسّر المكوّنات المكتوبة (يوم/شهر/سنة) كتاريخٍ هجريّ ونخزّنه بـ «h:».
       var p = parseDate(val);
-      if(p) val = p; else { hand.textContent = hand.dataset.before || ""; return; }
+      if(p) val = "h:" + p; else { hand.textContent = hand.dataset.before || ""; return; }
     }
 
     // ⚠ سباقٌ قاتل لولا هذا: commit يُطلَق ولا يُنتظَر (focusout سطر ٣٢٥)، وTab يُعمي
@@ -2589,7 +2590,6 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
       })();
       await tr._pending;
       tr._pending = null;
-      if(c.kind === "date" && val) offerHijri(td);   // خُزِّن ميلادياً؛ نسأل: هجريّ؟
       return;
     }
 
@@ -2608,56 +2608,14 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     if(field === "status") tr.dataset.status = val;
     hand.textContent = (field === "date") ? fmtDate(val) : val;
     fit(td); settle(td);
-    if(c.kind === "date" && val) offerHijri(td);
   }
 
   function settle(td){ td.classList.remove("settling"); void td.offsetWidth; td.classList.add("settling"); }
 
-  // ── سؤال التقويم — يظهر بعد كتابة التاريخ (مخزَّنٌ ميلادياً)، غير حاجب ─────────
-  // ميلاديّ = إبقاءٌ؛ هجريّ = يُحوَّل ويُحدَّث. الإغلاق أو «ميلادي» يُبقيه ميلادياً.
+  // التواريخ صارت هجريّةً دائماً (تُخزَّن بـ «h:» عند الكتابة)، فلا نافذةَ سؤالٍ للتقويم.
+  // closeCalAsk يبقى بلا أثرٍ (يستدعيه تبديل السجلّ احتياطاً)، إذ لا نافذةَ تُنشَأ الآن.
   var calAskEl = null;
   function closeCalAsk(){ if(calAskEl){ calAskEl.remove(); calAskEl = null; } }
-  function offerHijri(td){
-    closeCalAsk();
-    var tr = td.closest("tr"); if(!tr || tr.classList.contains("blank-line")) return;
-    var hand = td.querySelector(".hand"); if(!hand) return;
-    var r = calAskRect(td);
-    var box = document.createElement("div");
-    box.className = "cal-ask";
-    box.style.left = r.left + "px"; box.style.top = r.top + "px";
-    box.innerHTML = '<span class="cal-q">التقويم؟</span>' +
-      '<button type="button" data-cal="g">ميلادي</button>' +
-      '<button type="button" data-cal="h">هجري</button>';
-    document.body.appendChild(box);
-    calAskEl = box;
-    var done = false;
-    function pick(cal){
-      if(done) return; done = true; closeCalAsk();
-      if(cal !== "h") return;                       // ميلادي = لا تغيير
-      applyHijri(tr, td);
-    }
-    box.querySelector('[data-cal="g"]').addEventListener("click", function(){ pick("g"); });
-    box.querySelector('[data-cal="h"]').addEventListener("click", function(){ pick("h"); });
-    // إغلاق تلقائيّ بعد مهلة أو عند نقرٍ خارجه = إبقاء ميلاديّ
-    setTimeout(function(){ if(!done) pick("g"); }, 6000);
-  }
-  function calAskRect(td){
-    var b = td.getBoundingClientRect();
-    return { left: Math.max(8, b.left + b.width/2 - 84 + window.scrollX), top: b.bottom + 4 + window.scrollY };
-  }
-  async function applyHijri(tr, td){
-    if(tr._pending){ try{ await tr._pending; }catch(e){} }
-    var k = tr.dataset.k; if(k === "blank" || k === "pending") return;
-    var r = recOf(k); if(!r) return;
-    var iso = isoPart(r.date); if(!iso) return;
-    var val = "h:" + iso;
-    var c = colOf("date"); if(!c) return;
-    var upd = {}; upd[c.col] = val;
-    var res = await sb.from(board.table).update(upd).eq("id", k).select().single();
-    if(res.error){ toast("تعذّر ضبط التقويم", true); return; }
-    r.date = val;
-    var hand = td.querySelector(".hand"); if(hand){ hand.textContent = fmtDate(val); fit(td); settle(td); }
-  }
 
   // ── الشطب والحذف ─────────────────────────────────────────────────────────
   async function toggleStrike(k){
