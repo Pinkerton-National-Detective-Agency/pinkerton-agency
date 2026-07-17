@@ -814,31 +814,33 @@ body.arming .featured .feat-stamps{ pointer-events:none !important; }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    القيادة — لوحة المسؤولين الثلاثة. تحلّ محلّ الجدول حين يكون التبويب نشطاً؛
-   وحينها يُخفى موظف الأسبوع والمكتب والأدوات (انظر body[data-leaders] أدناه).
+   وحينها يُخفى موظف الأسبوع والمكتب والأدوات (انظر body[data-view] أدناه).
    ═══════════════════════════════════════════════════════════════════════════ */
 .leaders{ display:none; position:relative; z-index:2; padding:6px 8px 10px; }
-/* حين تكون لوحة القيادة نشطة: أخفِ الجدول وأختامه وبطاقة موظف الأسبوع وأدواتهما، وأظهر البطاقات */
-body[data-leaders] .featured,
-body[data-leaders] .register-wrap,
-body[data-leaders] .stamp-layer,
-body[data-leaders] .pager,
-body[data-leaders] .rule-minor,
-body[data-leaders] .vocab,
-body[data-leaders] .rubric-foot,
-body[data-leaders] .imprint,
-body[data-leaders] .pencil-help,
-body[data-leaders] .sidetools{ display:none !important; }
+/* حين تكون لوحةٌ خاصّة نشطة (قيادة/ملفّات): أخفِ الجدول وأختامه وموظف الأسبوع وأدواته */
+body[data-view] .featured,
+body[data-view] .register-wrap,
+body[data-view] .stamp-layer,
+body[data-view] .pager,
+body[data-view] .rule-minor,
+body[data-view] .vocab,
+body[data-view] .rubric-foot,
+body[data-view] .imprint,
+body[data-view] .pencil-help{ display:none !important; }
 /* المكتب يبقى ظاهراً من أجل «خروج» والهويّة فقط — نُخفي أدوات الجدول التي بداخله */
-body[data-leaders] .desk > #add,
-body[data-leaders] .desk > label,
-body[data-leaders] .desk > #q,
-body[data-leaders] .desk > #hit,
-body[data-leaders] .desk > #jump,
-body[data-leaders] .desk > #ink,
-body[data-leaders] .desk > #inkreset,
-body[data-leaders] .desk > .count,
-body[data-leaders] .desk > .desk-sep{ display:none !important; }
-body[data-leaders] .leaders{ display:block; }
+body[data-view] .desk > #add,
+body[data-view] .desk > label,
+body[data-view] .desk > #q,
+body[data-view] .desk > #hit,
+body[data-view] .desk > #jump,
+body[data-view] .desk > #ink,
+body[data-view] .desk > #inkreset,
+body[data-view] .desk > .count,
+body[data-view] .desk > .desk-sep{ display:none !important; }
+/* القيادة بلا أدواتِ أختام؛ والملفّات تستعملها (تبقى الأدوات ظاهرة) */
+body[data-view="leaders"] .sidetools{ display:none !important; }
+body[data-view="leaders"] .leaders{ display:block; }
+body[data-view="files"]   .cases{ display:block; }
 
 .leaders-head{ font-family:"Amiri",serif; font-weight:700; font-size:20px; color:var(--ink-press);
   text-align:center; letter-spacing:0; opacity:.85; margin:2px 0 20px;
@@ -871,6 +873,119 @@ body[data-role="editor"] .lead-photo:hover .feat-photo-hint{ opacity:1; }
   opacity:.4; font-family:"Amiri",serif; font-weight:400; filter:none; }
 .lead-role[contenteditable], .lead-name[contenteditable]{ cursor:text; }
 .lead-role[contenteditable]:focus, .lead-name[contenteditable]:focus{ box-shadow:inset 0 -1px 0 0 var(--ink); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   المطلوبون والقضايا — أضبارةٌ من ملفّات. القائمة صفوفُ أضابير؛ فتحُ ملفٍّ يطويها
+   ويعرض تفاصيله؛ طيّه يعيد القائمة. الأختام تُوضَع في منطقة التوقيع أسفل الملف.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.cases{ display:none; position:relative; z-index:2; padding:4px 4px 10px; }
+.cases[data-mode="list"] .case-detail{ display:none; }
+.cases[data-mode="open"] .cases-list,
+.cases[data-mode="open"] .cases-bar{ display:none; }
+
+.cases-bar{ display:flex; align-items:center; justify-content:space-between; gap:12px;
+  margin:2px 2px 16px; padding-bottom:9px; border-bottom:1px solid rgba(61,48,43,.22); }
+.cases-title{ font-family:"Amiri",serif; font-weight:700; font-size:20px; color:var(--ink-press); opacity:.85; }
+.cases-add{ font-family:"Amiri",serif; font-weight:700; font-size:14px; cursor:pointer;
+  background:transparent; color:var(--ink-press); border:1px solid rgba(61,48,43,.45); border-radius:2px;
+  padding:5px 14px; transition:background .12s; }
+.cases-add:hover{ background:rgba(61,48,43,.1); }
+/* القارئ لا يضيف ملفّات — نُخفي الزرّ (class side-write لا يطاله لأنه خارج .sidetools) */
+body:not([data-role="owner"]):not([data-role="editor"]) .cases-add{ display:none !important; }
+
+/* صفّ الأضبارة — لسانُ ملفٍّ من ورق مانيلا، يرتفع قليلاً عند التحويم */
+.cases-list{ display:flex; flex-direction:column; gap:9px; }
+.case-folder{ display:flex; align-items:center; gap:14px; width:100%; text-align:start; cursor:pointer;
+  font-family:"Amiri",serif; color:var(--ink-press);
+  background:linear-gradient(to bottom, rgba(214,188,148,.34), rgba(198,168,120,.16));
+  border:1px solid rgba(120,92,64,.5); border-inline-start:5px solid rgba(120,92,64,.6);
+  border-radius:2px; padding:11px 15px; box-shadow:0 2px 8px -5px rgba(0,0,0,.5);
+  transition:transform .1s, box-shadow .1s, background .12s; }
+.case-folder:hover{ transform:translateY(-1px); box-shadow:0 6px 16px -8px rgba(0,0,0,.6);
+  background:linear-gradient(to bottom, rgba(214,188,148,.5), rgba(198,168,120,.24)); }
+.case-folder .case-no{ font-family:"Old Standard TT",Georgia,serif; font-weight:700; font-size:19px;
+  color:var(--ink); min-width:64px; direction:ltr; text-align:center;
+  border-inline-end:1px solid rgba(61,48,43,.28); padding-inline-end:12px; }
+.case-folder .case-name{ font-family:"Aref Ruqaa","Traditional Arabic",serif; font-weight:700; font-size:21px;
+  color:var(--ink); flex:1; filter:url(#inkbleed); }
+@supports (font-palette: --x){ .case-folder .case-name{ font-family:"Aref Ruqaa Ink","Aref Ruqaa",serif; font-palette:--dip3; } }
+.case-folder .case-name:empty::before{ content:"قضيّةٌ بلا اسم"; color:var(--graphite); opacity:.4; filter:none; font-family:"Amiri",serif; font-weight:400; }
+.case-status{ font-family:"Amiri",serif; font-weight:700; font-size:12.5px; letter-spacing:0;
+  color:var(--sc,#6b5d4f); border:1.4px solid var(--sc,#6b5d4f); border-radius:2px; padding:2px 10px;
+  white-space:nowrap; opacity:.9; mix-blend-mode:multiply; }
+.case-status:empty{ display:none; }
+
+/* ── الملفّ المفتوح ────────────────────────────────────────────────────────── */
+.case-detail-inner{ display:flex; flex-direction:column; gap:16px; }
+.case-close{ align-self:flex-start; font-family:"Amiri",serif; font-weight:700; font-size:14px; cursor:pointer;
+  background:transparent; color:var(--ink-press); border:1px solid rgba(61,48,43,.4); border-radius:2px; padding:5px 13px; }
+.case-close:hover{ background:rgba(61,48,43,.1); }
+.case-head{ display:flex; flex-direction:column; gap:9px; padding-bottom:12px; border-bottom:1px solid rgba(61,48,43,.28); }
+.case-idline{ display:flex; align-items:baseline; gap:9px; }
+.case-hl{ font-family:"Amiri",serif; font-size:15px; color:var(--ink-press); opacity:.75; }
+.case-no-edit{ font-family:"Old Standard TT",Georgia,serif; font-weight:700; font-size:22px; color:var(--ink);
+  direction:ltr; min-width:40px; outline:none; }
+.case-title-edit{ font-family:"Aref Ruqaa","Traditional Arabic",serif; font-weight:700; font-size:30px;
+  color:var(--ink); filter:url(#inkbleed); outline:none; min-height:38px; }
+@supports (font-palette: --x){ .case-title-edit{ font-family:"Aref Ruqaa Ink","Aref Ruqaa",serif; font-palette:--dip3; } }
+.case-no-edit:empty::before, .case-title-edit:empty::before{ content:attr(data-ghost); color:var(--graphite); opacity:.4; filter:none; font-family:"Amiri",serif; font-weight:400; }
+
+/* شريط الحالة — أزرارٌ لحالة الملفّ */
+.case-status-row{ display:flex; flex-wrap:wrap; gap:7px; margin-top:2px; }
+.case-schip{ font-family:"Amiri",serif; font-weight:700; font-size:13px; cursor:pointer;
+  background:transparent; color:var(--ink-press); border:1px solid rgba(61,48,43,.3); border-radius:2px; padding:3px 11px; opacity:.62; transition:all .12s; }
+.case-schip:hover{ opacity:.9; }
+.case-schip.on{ opacity:1; color:#fff; background:var(--sc,#6b5d4f); border-color:var(--sc,#6b5d4f); }
+
+/* عمودان: الصورة الشخصية + المتن */
+.case-cols{ display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap; }
+.case-photo-col{ flex:0 0 auto; }
+.case-main-col{ flex:1 1 340px; display:flex; flex-direction:column; gap:6px; min-width:280px; }
+.case-photo{ position:relative; width:196px; height:232px; border:1.5px solid rgba(61,48,43,.55); border-radius:2px;
+  background:rgba(255,252,245,.35); overflow:hidden; display:flex; align-items:center; justify-content:center;
+  box-shadow:inset 0 0 0 3px rgba(120,92,64,.14); }
+.case-photo .feat-silhouette{ width:94px; height:94px; opacity:.4; }
+.case-photo img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+body[data-role="owner"] .case-photo, body[data-role="editor"] .case-photo{ cursor:pointer; }
+body[data-role="owner"] .case-photo:hover .feat-photo-hint,
+body[data-role="editor"] .case-photo:hover .feat-photo-hint{ opacity:1; }
+
+.case-field-label{ font-family:"Amiri",serif; font-weight:700; font-size:14px; color:var(--ink-press); opacity:.72;
+  letter-spacing:0; margin-top:4px; }
+.case-body, .case-officers{ font-family:"Amiri",serif; font-size:16px; line-height:1.95; color:var(--ink-press);
+  outline:none; min-height:28px; border-bottom:1px dashed rgba(61,48,43,.2); padding-bottom:4px; white-space:pre-wrap; }
+.case-officers{ min-height:24px; }
+.case-body:empty::before, .case-officers:empty::before{ content:attr(data-ghost); color:var(--graphite); opacity:.4; }
+
+/* الأدلّة — صورٌ مصغّرة قابلة للإضافة */
+.case-evidence{ display:flex; flex-wrap:wrap; gap:10px; }
+.case-ev{ position:relative; width:96px; height:96px; border:1px solid rgba(61,48,43,.5); border-radius:2px;
+  overflow:hidden; background:rgba(255,252,245,.3); box-shadow:inset 0 0 0 2px rgba(120,92,64,.12); }
+.case-ev img{ width:100%; height:100%; object-fit:cover; display:block; }
+.case-ev .case-ev-del{ position:absolute; top:2px; inset-inline-end:2px; width:20px; height:20px; line-height:18px;
+  text-align:center; cursor:pointer; background:rgba(61,48,43,.82); color:var(--paper-hi); border:0; border-radius:2px; font-size:14px; }
+.case-ev-add{ width:96px; height:96px; cursor:pointer; border:1px dashed rgba(61,48,43,.45); border-radius:2px;
+  background:transparent; color:var(--ink-press); font-family:"Amiri",serif; font-size:13px; opacity:.7; }
+.case-ev-add:hover{ opacity:1; background:rgba(61,48,43,.06); }
+
+/* منطقة الأختام والتوقيع — إطارٌ مخصّص، الأختام تُضرَب داخله فقط */
+.case-signzone{ position:relative; min-height:130px; border:1.5px solid rgba(61,48,43,.4); border-radius:2px;
+  background:repeating-linear-gradient(-45deg, rgba(120,92,64,.05) 0 10px, transparent 10px 20px);
+  padding:12px 14px; overflow:hidden; }
+.case-sign{ position:relative; z-index:1; font-family:"Aref Ruqaa","Traditional Arabic",serif; font-weight:700;
+  font-size:22px; color:var(--ink); filter:url(#inkbleed); outline:none; min-height:34px; max-width:60%; }
+@supports (font-palette: --x){ .case-sign{ font-family:"Aref Ruqaa Ink","Aref Ruqaa",serif; font-palette:--dip3; } }
+.case-sign:empty::before{ content:"التوقيع…"; color:var(--graphite); opacity:.4; filter:none; font-family:"Amiri",serif; font-weight:400; }
+.case-stamps{ position:absolute; inset:0; z-index:5; pointer-events:none; }
+.case-stamps .stamp{ pointer-events:auto; }
+/* أثناء حمل ختمٍ: تتعطّل كتابة التوقيع مؤقتاً كي يقع النقر في المنطقة فيُوضَع الختم */
+body.arming .case-signzone{ cursor:crosshair; }
+body.arming .case-signzone .case-sign,
+body.arming .case-signzone .case-stamps{ pointer-events:none !important; }
+
+.case-del{ align-self:flex-start; font-family:"Amiri",serif; font-size:13px; cursor:pointer; margin-top:4px;
+  background:transparent; color:#8a1c2c; border:1px solid rgba(138,28,44,.4); border-radius:2px; padding:4px 12px; opacity:.8; }
+.case-del:hover{ opacity:1; background:rgba(138,28,44,.08); }
 
 .pager{ display:flex; align-items:center; justify-content:center; gap:16px;
         margin-top:12px; position:relative; z-index:2; }
@@ -1236,6 +1351,17 @@ body[data-panel] .panel-back{ display:flex; }
     <input type="file" id="leadFile" accept="image/*" hidden>
   </section>
 
+  <!-- المطلوبون والقضايا — ملفّاتٌ تُفتح فتتوسّع، وتُطوى فتظهر البقيّة. تُبنى ملفّاتها في JS. -->
+  <section class="cases" id="cases" data-mode="list" aria-label="المطلوبون والقضايا">
+    <div class="cases-bar">
+      <div class="cases-title">أضبارة المطلوبين والقضايا</div>
+      <button class="cases-add side-write" id="caseAdd" type="button">＋ افتح قضيّةً</button>
+    </div>
+    <div class="cases-list" id="casesList"></div>
+    <div class="case-detail" id="caseDetail"></div>
+    <input type="file" id="caseFile" accept="image/*" hidden>
+  </section>
+
   <div class="register-wrap">
     <div class="register-bg"></div>
     <table class="register">
@@ -1423,7 +1549,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
         featPhotoEl = $("featPhoto"), featImgEl = $("featImg"), featFileEl = $("featFile"),
         featNameEl = $("featName"), featAchEl = $("featAch"),
         featuredEl = $("featured"), featStampsEl = $("featStamps"),
-        leadersEl = $("leaders"), leadFileEl = $("leadFile");
+        leadersEl = $("leaders"), leadFileEl = $("leadFile"),
+        casesEl = $("cases"), casesListEl = $("casesList"), caseDetailEl = $("caseDetail"),
+        caseFileEl = $("caseFile"), caseAddEl = $("caseAdd");
 
   const esc = s => String(s == null ? "" : s).replace(/[<&>"]/g, c => ({ "<":"&lt;","&":"&amp;",">":"&gt;",'"':"&quot;" }[c]));
 
@@ -1495,6 +1623,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   var BOARDS = {
     // القيادة — لوحةٌ خاصّة (kind:leaders): بطاقاتٌ لا جدول. لا table/stamps/cols لها.
     leadership: { key:"leadership", tab:"القيادة", kind:"leaders" },
+    // المطلوبون والقضايا — لوحةٌ خاصّة (kind:files): ملفّاتٌ من جدول cases، بلا أعمدةٍ جدوليّة.
+    cases: { key:"cases", tab:"المطلوبون والقضايا", kind:"files" },
     agents: {
       key:"agents", tab:"سجل العملاء", table:"roster", stamps:"roster_stamps",
       headers:["رقم المعرف","الاسم كامل","رتبة العميل","تاريخ الالتحاق","حالة الخدمة"],
@@ -1526,7 +1656,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
       ],
     },
   };
-  var BOARD_ORDER = ["leadership", "laws", "agents", "banned"];   // القيادة ثمّ القوانين فوق سجل العملاء
+  var BOARD_ORDER = ["leadership", "laws", "agents", "cases", "banned"];   // القضايا بعد سجل العملاء
   var board = BOARDS.agents;
   function colOf(field){ if(!board.cols) return null; for(var i=0;i<board.cols.length;i++) if(board.cols[i].field===field) return board.cols[i]; return null; }
   function dbCol(field){ var c = colOf(field); return c ? c.col : field; }
@@ -1559,10 +1689,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
       bookTabsEl.appendChild(el);
     });
   }
-  // إظهار/إخفاء العرض حسب نوع السجلّ: القيادة بطاقاتٌ، والبقيّة جدول.
+  // إظهار/إخفاء العرض حسب نوع السجلّ: القيادة بطاقاتٌ، القضايا ملفّاتٌ، والبقيّة جدول.
   function applyView(){
-    if(board.kind === "leaders") document.body.setAttribute("data-leaders", "1");
-    else document.body.removeAttribute("data-leaders");
+    if(board.kind) document.body.setAttribute("data-view", board.kind);   // leaders | files
+    else document.body.removeAttribute("data-view");
   }
   async function switchBoard(key){
     if(!BOARDS[key] || key === board.key) return;
@@ -1572,11 +1702,13 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     disarm(); closeCalAsk();       // لا يبقى ختمٌ محمولٌ ولا نافذةُ تقويمٍ يتيمةٌ عبر التبديل
     if(qEl) qEl.value = ""; if(hitEl) hitEl.textContent = "";
     buildTabs(); applyView();
-    if(board.kind === "leaders"){
-      // لوحة القيادة: لا جدول ولا اشتراك جدوليّ. نوقف قناة السجلّ السابق كي لا
-      // يُطلق حدثٌ متأخّرٌ إعادة جلبٍ على جدولٍ لا وجود له في هذه اللوحة.
+    if(board.kind){
+      // لوحةٌ خاصّة (قيادة/ملفّات): لا جدولَ في السجلّ ولا اشتراكٌ جدوليّ عبر liveChannel.
+      // نوقف قناة السجلّ السابق كي لا يُطلق حدثٌ متأخّرٌ إعادة جلبٍ على جدولٍ لا وجود له.
+      // (لكلّ لوحةٍ خاصّةٍ قناتها الحيّة المستقلّة المربوطة مرّةً في enterLedger.)
       if(liveChannel){ sb.removeChannel(liveChannel); liveChannel = null; }
-      loadLeaders();
+      if(board.kind === "leaders") loadLeaders();
+      else if(board.kind === "files") loadCases();
       flip();
       return;
     }
@@ -1653,6 +1785,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     if(isOwner()) wireOwnerPanel();
     wireFeatured();
     wireLeaders();
+    wireCases();
     buildTabs(); buildThead(); applyView();
     await render();
     if(document.fonts && document.fonts.ready) document.fonts.ready.then(() => paint());
@@ -1856,6 +1989,263 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     if(await saveLeader(slot, { photo_url: url })){ loadLeaders(); toast("حُدِّثت الصورة"); }
   }
 
+  // ── المطلوبون والقضايا — أضبارةُ ملفّات ────────────────────────────────────
+  // كلّ ملفّ صفٌّ في cases. القائمة أضابيرُ مطويّة؛ فتحُ ملفٍّ يعرض تفاصيله كاملة.
+  // الأختام تُضرَب في منطقة التوقيع أسفل الملفّ وتُحفظ في العمود stamps (jsonb).
+  var CASE_STATUS = [
+    { t:"مفتوح",       c:"#2f7d4f" },
+    { t:"قيد العمل",   c:"#2f6fae" },
+    { t:"قيد التنفيذ", c:"#5a49a8" },
+    { t:"مؤجل",        c:"#b07a1e" },
+    { t:"منتهي",       c:"#6b5d4f" },
+    { t:"مغلق",        c:"#8a1c2c" },
+  ];
+  function statusColor(s){ for(var i=0;i<CASE_STATUS.length;i++) if(CASE_STATUS[i].t===s) return CASE_STATUS[i].c; return "#6b5d4f"; }
+  var casesData = [], openCaseId = null, caseUpload = null;
+  function caseById(id){ for(var i=0;i<casesData.length;i++) if(casesData[i].id===id) return casesData[i]; return null; }
+  function casesEditingNow(){ var a = document.activeElement; return !!(a && a.closest && a.closest("#cases [contenteditable]")); }
+
+  function caseLabel(t){ var d = document.createElement("div"); d.className = "case-field-label"; d.textContent = t; return d; }
+  function pastePlain(el){ el.addEventListener("paste", function(ev){
+    ev.preventDefault(); var t = (ev.clipboardData || window.clipboardData).getData("text").replace(/\s+/g, " ");
+    document.execCommand("insertText", false, t); }); }
+  function caseEditable(cls, ghost, value, canEdit){
+    var el = document.createElement("div"); el.className = cls;
+    if(ghost) el.setAttribute("data-ghost", ghost);
+    el.textContent = value || "";
+    if(canEdit) el.setAttribute("contenteditable", "plaintext-only");
+    return el;
+  }
+  function caseSilhouette(){ return '<svg class="feat-silhouette" viewBox="0 0 64 64" aria-hidden="true"><g fill="none" stroke="#3D302B" stroke-width="1.4"><circle cx="32" cy="24" r="11"/><path d="M12 56c0-12 9-19 20-19s20 7 20 19"/></g></svg>'; }
+
+  async function loadCases(){
+    try{
+      var res = await sb.from("cases").select("*").order("created_at", { ascending:false });
+      if(!res.error){ casesData = res.data || []; if(!casesEditingNow()) renderCases(); }
+    }catch(e){}
+  }
+  async function saveCase(id, patch){
+    var res = await sb.from("cases").update(patch).eq("id", id).select().single();
+    if(res.error){ toast("تعذّر الحفظ: " + res.error.message, true); return false; }
+    var c = caseById(id); if(c) Object.assign(c, patch);
+    return true;
+  }
+  async function addCase(){
+    if(!canWrite()) return;
+    var res = await sb.from("cases").insert({ status:"مفتوح" }).select().single();
+    if(res.error){ toast("تعذّر فتح الملف: " + res.error.message, true); return; }
+    openCaseId = res.data.id;
+    await loadCases();
+    window.scrollTo({ top:0 });
+  }
+  async function deleteCase(id){
+    if(!canWrite()) return;
+    var res = await sb.from("cases").delete().eq("id", id).select().single();
+    if(res.error){ toast("تعذّر الحذف: " + res.error.message, true); return; }
+    if(openCaseId === id) openCaseId = null;
+    loadCases();
+  }
+  async function uploadCaseImage(kind, id, file){
+    var ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+    var path = kind === "main" ? ("case-" + id + "-main." + ext) : ("case-" + id + "-ev-" + Date.now() + "." + ext);
+    toast("جارٍ رفع الصورة…");
+    var up = await sb.storage.from("cases").upload(path, file, { upsert:true, cacheControl:"0", contentType:file.type });
+    caseFileEl.value = ""; caseUpload = null;
+    if(up.error){ toast("تعذّر رفع الصورة: " + up.error.message, true); return; }
+    var url = sb.storage.from("cases").getPublicUrl(path).data.publicUrl + "?t=" + Date.now();
+    var c = caseById(id); if(!c) return;
+    if(kind === "main"){ if(await saveCase(id, { photo_url:url })){ renderCases(); toast("حُدِّثت الصورة"); } }
+    else{ var ev = Array.isArray(c.evidence) ? c.evidence.slice() : []; ev.push(url);
+          if(await saveCase(id, { evidence:ev })){ renderCases(); toast("أُضيف دليل"); } }
+  }
+
+  function renderCaseStamps(layer, arr, id){
+    layer.textContent = "";
+    (arr || []).forEach(function(st, i){
+      var el = document.createElement("span"); el.className = "stamp";
+      fillStampContent(el, st.t, "cs" + id + "-" + i);
+      el.style.left = (st.x * 100) + "%"; el.style.top = (st.y * 100) + "%";
+      el.style.setProperty("--rot", (st.rot || 0) + "deg");
+      el.style.setProperty("--stamp-scale", st.sz || 1);
+      el.style.setProperty("--stamp-colour", st.c || "#A3201F");
+      if(canWrite()){
+        el.title = "انقر لرفعه";
+        el.addEventListener("click", function(ev){
+          ev.stopPropagation();
+          var c = caseById(id); if(!c) return;
+          var a = Array.isArray(c.stamps) ? c.stamps.slice() : []; a.splice(i, 1);
+          c.stamps = a; saveCase(id, { stamps:a }); renderCaseStamps(layer, a, id);
+        });
+      }
+      layer.appendChild(el);
+    });
+  }
+  function buildCasePhoto(c, kind, w, url){
+    var ph = document.createElement("div"); ph.className = "case-photo";
+    ph.innerHTML = caseSilhouette();
+    var im = document.createElement("img"); im.alt = "";
+    if(url) im.src = url; else im.hidden = true;
+    ph.appendChild(im);
+    if(w){
+      var hint = document.createElement("div"); hint.className = "feat-photo-hint"; hint.textContent = "انقر للرفع";
+      ph.appendChild(hint); ph.title = "انقر لتغيير الصورة";
+      ph.addEventListener("click", function(){ caseUpload = { kind:kind, id:c.id }; caseFileEl.click(); });
+    }
+    return ph;
+  }
+  function buildFolder(c){
+    var b = document.createElement("button"); b.type = "button"; b.className = "case-folder"; b.dataset.id = c.id;
+    var no = document.createElement("span"); no.className = "case-no"; no.textContent = c.no ? ("#" + c.no) : "—";
+    var nm = document.createElement("span"); nm.className = "case-name"; nm.textContent = c.title || "";
+    var st = document.createElement("span"); st.className = "case-status";
+    if(c.status){ st.textContent = c.status; st.style.setProperty("--sc", statusColor(c.status)); }
+    b.appendChild(no); b.appendChild(nm); b.appendChild(st);
+    b.addEventListener("click", function(){ openCaseId = c.id; renderCases(); window.scrollTo({ top:0 }); });
+    return b;
+  }
+  function buildDetail(c){
+    var w = canWrite(), root = document.createElement("div"); root.className = "case-detail-inner";
+
+    var close = document.createElement("button"); close.type = "button"; close.className = "case-close";
+    close.textContent = "▸ طيّ الملف — عودةٌ للقائمة";
+    close.addEventListener("click", function(){ openCaseId = null; renderCases(); });
+    root.appendChild(close);
+
+    var head = document.createElement("div"); head.className = "case-head";
+    var idline = document.createElement("div"); idline.className = "case-idline";
+    var hl = document.createElement("span"); hl.className = "case-hl"; hl.textContent = "ملفّ رقم";
+    var noEl = caseEditable("case-no-edit", "000", c.no, w);
+    idline.appendChild(hl); idline.appendChild(noEl);
+    var titleEl = caseEditable("case-title-edit", "اسم القضية / المطلوب", c.title, w);
+    head.appendChild(idline); head.appendChild(titleEl);
+
+    var srow = document.createElement("div"); srow.className = "case-status-row";
+    CASE_STATUS.forEach(function(s){
+      var chip = document.createElement("button"); chip.type = "button";
+      chip.className = "case-schip" + (c.status === s.t ? " on" : "");
+      chip.textContent = s.t; chip.style.setProperty("--sc", s.c);
+      if(w) chip.addEventListener("click", function(){
+        var ns = (c.status === s.t) ? null : s.t;
+        c.status = ns; saveCase(c.id, { status:ns });
+        Array.prototype.forEach.call(srow.children, function(x){ x.classList.remove("on"); });
+        if(ns) chip.classList.add("on");
+      });
+      srow.appendChild(chip);
+    });
+    head.appendChild(srow);
+    root.appendChild(head);
+    if(w){
+      noEl.addEventListener("blur", function(){ var v = noEl.textContent.trim(); c.no = v; saveCase(c.id, { no:v }); });
+      titleEl.addEventListener("blur", function(){ var v = titleEl.textContent.trim(); c.title = v; saveCase(c.id, { title:v }); });
+      pastePlain(noEl); pastePlain(titleEl);
+    }
+
+    var cols = document.createElement("div"); cols.className = "case-cols";
+    var pcol = document.createElement("div"); pcol.className = "case-photo-col";
+    pcol.appendChild(buildCasePhoto(c, "main", w, c.photo_url));
+    cols.appendChild(pcol);
+    var mcol = document.createElement("div"); mcol.className = "case-main-col";
+    mcol.appendChild(caseLabel("التفاصيل والتقرير والأحداث"));
+    var body = caseEditable("case-body", "اكتب تفاصيل القضية والتقرير والأحداث…", c.body, w);
+    mcol.appendChild(body);
+    mcol.appendChild(caseLabel("المسؤولون عن الملف"));
+    var off = caseEditable("case-officers", "أسماء ورتب المسؤولين عن الملف…", c.officers, w);
+    mcol.appendChild(off);
+    cols.appendChild(mcol);
+    root.appendChild(cols);
+    if(w){
+      body.addEventListener("blur", function(){ var v = body.textContent; c.body = v; saveCase(c.id, { body:v }); });
+      off.addEventListener("blur", function(){ var v = off.textContent; c.officers = v; saveCase(c.id, { officers:v }); });
+    }
+
+    root.appendChild(caseLabel("الأدلّة"));
+    var evwrap = document.createElement("div"); evwrap.className = "case-evidence";
+    var ev = Array.isArray(c.evidence) ? c.evidence : [];
+    ev.forEach(function(url, i){
+      var box = document.createElement("div"); box.className = "case-ev";
+      var im = document.createElement("img"); im.src = url; im.alt = "دليل"; box.appendChild(im);
+      if(w){
+        var d = document.createElement("button"); d.type = "button"; d.className = "case-ev-del"; d.textContent = "×"; d.title = "حذف الدليل";
+        d.addEventListener("click", function(){
+          var arr = Array.isArray(c.evidence) ? c.evidence.slice() : []; arr.splice(i, 1);
+          c.evidence = arr; saveCase(c.id, { evidence:arr }); renderCases();
+        });
+        box.appendChild(d);
+      }
+      evwrap.appendChild(box);
+    });
+    if(w){
+      var add = document.createElement("button"); add.type = "button"; add.className = "case-ev-add"; add.textContent = "＋ دليل";
+      add.addEventListener("click", function(){ caseUpload = { kind:"ev", id:c.id }; caseFileEl.click(); });
+      evwrap.appendChild(add);
+    }
+    root.appendChild(evwrap);
+
+    root.appendChild(caseLabel("الأختام والتوقيع"));
+    var zone = document.createElement("div"); zone.className = "case-signzone";
+    var sign = caseEditable("case-sign", "التوقيع…", c.sign, w);
+    var slayer = document.createElement("div"); slayer.className = "case-stamps";
+    zone.appendChild(sign); zone.appendChild(slayer);
+    root.appendChild(zone);
+    if(w){ sign.addEventListener("blur", function(){ var v = sign.textContent.trim(); c.sign = v; saveCase(c.id, { sign:v }); }); pastePlain(sign); }
+    renderCaseStamps(slayer, Array.isArray(c.stamps) ? c.stamps : [], c.id);
+    zone.addEventListener("click", function(ev2){
+      if(!arming || !held || !canWrite()) return;
+      ev2.preventDefault(); ev2.stopPropagation();
+      var r = zone.getBoundingClientRect();
+      var arr = Array.isArray(c.stamps) ? c.stamps.slice() : [];
+      arr.push({ x:+((ev2.clientX - r.x) / r.width).toFixed(4), y:+((ev2.clientY - r.y) / r.height).toFixed(4),
+                 rot:Math.round(Math.random() * 16 - 8), sz:armSize, t:held.t, c:held.c });
+      c.stamps = arr; disarm(); saveCase(c.id, { stamps:arr }); renderCaseStamps(slayer, arr, c.id);
+    }, true);
+
+    if(w){
+      var del = document.createElement("button"); del.type = "button"; del.className = "case-del"; del.textContent = "حذف الملف نهائياً";
+      del.addEventListener("click", function(){ if(window.confirm("حذف هذا الملف نهائياً؟ لا يمكن التراجع.")) deleteCase(c.id); });
+      root.appendChild(del);
+    }
+    return root;
+  }
+  function renderCases(){
+    if(!casesEl) return;
+    if(openCaseId != null && !caseById(openCaseId)) openCaseId = null;
+    casesEl.setAttribute("data-mode", openCaseId != null ? "open" : "list");
+    casesListEl.textContent = ""; caseDetailEl.textContent = "";
+    if(openCaseId == null){
+      if(!casesData.length){
+        var empty = document.createElement("div"); empty.className = "case-field-label";
+        empty.style.textAlign = "center"; empty.style.opacity = ".5"; empty.style.padding = "18px 0";
+        empty.textContent = canWrite() ? "لا ملفّات بعد — افتح قضيّةً جديدة." : "لا ملفّات بعد.";
+        casesListEl.appendChild(empty);
+      }
+      casesData.forEach(function(c){ casesListEl.appendChild(buildFolder(c)); });
+    }else{
+      caseDetailEl.appendChild(buildDetail(caseById(openCaseId)));
+    }
+  }
+  var casesWired = false;
+  function wireCases(){
+    if(!casesEl) return;
+    loadCases();
+    if(casesWired) return; casesWired = true;
+    if(caseAddEl && canWrite()) caseAddEl.addEventListener("click", addCase);
+    if(canWrite() && caseFileEl){
+      caseFileEl.addEventListener("change", function(){
+        var f = caseFileEl.files && caseFileEl.files[0];
+        if(!f || !caseUpload){ caseFileEl.value = ""; return; }
+        if(f.size > 6 * 1024 * 1024){ toast("الصورة أكبر من ٦ ميغا", true); caseFileEl.value = ""; caseUpload = null; return; }
+        uploadCaseImage(caseUpload.kind, caseUpload.id, f);
+      });
+    }
+    try{
+      sb.channel("cases-live")
+        .on("postgres_changes", { event:"*", schema:"public", table:"cases" }, function(){
+          if(casesEditingNow()) return;
+          loadCases();
+        }).subscribe();
+    }catch(e){}
+  }
+
   // ── التحديث الفوري ─────────────────────────────────────────────────────────
   // الحدث مجرّد إشارة «أعد الجلب»؛ البيانات نفسها تعبر القناة المحمية بـ RLS (fetchPage).
   // ⚠ أحداث الحذف لا تخضع لـ RLS في Realtime، فما يخرج منها إلا الرقم التسلسلي (PK)
@@ -1868,7 +2258,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     return !!(a && a.closest && a.closest("#rows .hand"));
   }
   async function refreshLive(){
-    if(board.kind === "leaders"){ liveDirty = false; return; }   // القيادة بلا جدول تُجلَب
+    if(board.kind){ liveDirty = false; return; }   // اللوحات الخاصّة (قيادة/ملفّات) بلا جدولٍ يُجلَب
     if(editingNow() || arming || document.body.hasAttribute("data-panel")){ liveDirty = true; return; }
     liveDirty = false;
     await render();
@@ -1925,7 +2315,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   }
 
   async function render(focus){
-    if(board.kind === "leaders") return;   // القيادة تُرسَم كبطاقات لا كجدول
+    if(board.kind) return;   // اللوحات الخاصّة (قيادة/ملفّات) تُرسَم بذاتها لا كجدول
     const e = epoch;
     if(page < 0) page = 0;
     await fetchPage(e);
@@ -1935,6 +2325,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   }
 
   function paint(focus){
+    if(board.kind) return;   // اللوحات الخاصّة لا جدولَ لها (يُنادى paint مباشرةً من fonts.ready)
     rowsEl.textContent = "";
     pageRecs.forEach((r, i) => rowsEl.appendChild(renderRow(r, i, false)));
     if(canWrite() && page === pageCount()-1 && pageRecs.length < PER_LEAF){
@@ -2366,8 +2757,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
       val.textContent = szPct(st.sz);
       stampEl.style.setProperty("--stamp-scale", st.sz);
       if(szSaveT) clearTimeout(szSaveT);
+      var szTbl = board.stamps;                       // نلتقط جدول السجلّ الآن: لو بُدِّل قبل الحفظ نكتب للصحيح
       szSaveT = setTimeout(async function(){
-        var res = await sb.from(board.stamps).update({ sz: st.sz }).eq("id", st.id).select().single();
+        if(!szTbl) return;
+        var res = await sb.from(szTbl).update({ sz: st.sz }).eq("id", st.id).select().single();
         if(res.error) toast("تعذّر حفظ المقاس", true);
       }, 350);
     }
@@ -2417,6 +2810,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   updateSzShow();
 
   leafEl.addEventListener("click", async function(ev){
+    if(board.kind) return;   // اللوحات الخاصّة لها مناطق أختامها الخاصّة، لا ورقة السجلّ
     // نقرةٌ على ورقةٍ بلا ختمٍ محمول: إن كان ثمّة ختمٌ مختار، ألغِ اختياره فقط.
     if(!arming || !held || !canWrite()){
       if(selectedStampId !== null && !ev.target.closest(".stamp") && !ev.target.closest(".stamp-ctl")){
@@ -2503,6 +2897,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     if(n >= 1 && n <= pageCount()){ page = n - 1; await render(); flip(); } else { this.value = page + 1; }
   });
   addEl.addEventListener("click", async function(){
+    if(board.kind) return;   // «قيد جديد» للجداول فقط، لا للوحات الخاصّة
     page = pageCount() - 1; await render();
     var h = rowsEl.querySelector('tr.blank-line td[data-field="name"] .hand');
     if(h){ h.scrollIntoView({ block:"center" }); h.focus(); caretEnd(h); }
