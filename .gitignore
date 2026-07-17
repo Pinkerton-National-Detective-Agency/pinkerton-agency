@@ -6,5 +6,8 @@ laws.sql
 leaders.sql
 realtime.sql
 schema.sql
+
+# صورة التوقيع الأصليّة — مدمجةٌ base64 في index.html، فلا داعي لرفع الخام
+archer-sig.png
 seed.sql
 stamp-size.sql
