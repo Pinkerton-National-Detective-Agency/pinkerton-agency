@@ -859,25 +859,25 @@ body[data-view="files"]   .cases{ display:block; }
 .leaders-head{ font-family:"Amiri",serif; font-weight:700; font-size:20px; color:var(--ink-press);
   text-align:center; letter-spacing:0; opacity:.85; margin:2px 0 20px;
   padding-bottom:9px; border-bottom:1px solid rgba(61,48,43,.22); }
-.leaders-row{ display:flex; flex-wrap:wrap; justify-content:center; align-items:flex-start; gap:38px; }
-.lead{ display:flex; flex-direction:column; align-items:center; gap:12px; width:214px; }
+.leaders-row{ display:flex; flex-wrap:wrap; justify-content:center; align-items:flex-start; gap:18px; }
+.lead{ display:flex; flex-direction:column; align-items:center; gap:13px; width:256px; }
 
-/* مساحة الصورة — إطار بورتريه بحبرٍ، بداخله ظلٌّ حين تخلو (كبطاقة موظف الأسبوع) */
-.lead-photo{ position:relative; width:202px; height:238px; border:1.5px solid rgba(61,48,43,.55);
+/* مساحة الصورة — إطار بورتريه كبيرٌ بحبرٍ، لتوضيح تفاصيل الوجه؛ بداخله ظلٌّ حين تخلو */
+.lead-photo{ position:relative; width:246px; height:326px; border:1.5px solid rgba(61,48,43,.55);
   border-radius:2px; background:rgba(255,252,245,.35); overflow:hidden; display:flex;
   align-items:center; justify-content:center; box-shadow:inset 0 0 0 3px rgba(120,92,64,.14); }
-.lead-photo .feat-silhouette{ width:98px; height:98px; opacity:.4; }
+.lead-photo .feat-silhouette{ width:130px; height:130px; opacity:.4; }
 .lead-photo img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
 body[data-role="owner"] .lead-photo, body[data-role="editor"] .lead-photo{ cursor:pointer; }
 body[data-role="owner"] .lead-photo:hover .feat-photo-hint,
 body[data-role="editor"] .lead-photo:hover .feat-photo-hint{ opacity:1; }
 
 /* المنصب — سطرٌ رسميّ مطبوع (أميري) */
-.lead-role{ font-family:"Amiri",serif; font-weight:700; font-size:19px; color:var(--ink-press);
-  text-align:center; min-height:24px; width:100%; outline:none; letter-spacing:0;
+.lead-role{ font-family:"Amiri",serif; font-weight:700; font-size:21px; color:var(--ink-press);
+  text-align:center; min-height:26px; width:100%; outline:none; letter-spacing:0;
   border-bottom:1px solid rgba(61,48,43,.26); padding-bottom:7px; }
 /* الاسم — بحبر الرقعة كالدفتر، مع نزّ الحبر */
-.lead-name{ font-family:"Aref Ruqaa","Traditional Arabic",serif; font-weight:700; font-size:25px;
+.lead-name{ font-family:"Aref Ruqaa","Traditional Arabic",serif; font-weight:700; font-size:28px;
   color:var(--ink); filter:url(#inkbleed); transform:rotate(-.5deg);
   text-align:center; min-height:30px; width:100%; outline:none; }
 @supports (font-palette: --x){
