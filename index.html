@@ -641,6 +641,19 @@ body[data-role="reader"] .sidetools{ display:none; }
 
 .side-title{ font-family:"Amiri",serif; font-weight:700; font-size:14px; color:var(--ink-press);
   text-align:center; border-bottom:1px solid rgba(61,48,43,.3); padding-bottom:6px; margin-bottom:2px; }
+
+/* أقسامُ الأدوات — قائمةٌ من عناوين تُفتح نافذةً واحدة في كلّ مرّة */
+.tool-acc{ display:flex; flex-direction:column; gap:6px; }
+.tool-cat{ border:1px solid rgba(120,92,64,.34); border-radius:2px; overflow:hidden; background:rgba(255,252,245,.14); }
+.tool-cat.open{ background:rgba(255,252,245,.24); }
+.tool-head{ width:100%; display:flex; align-items:center; gap:8px; text-align:start; cursor:pointer;
+  font-family:"Amiri",serif; font-weight:700; font-size:13.5px; color:var(--ink-press);
+  background:transparent; border:0; padding:8px 10px; letter-spacing:0; }
+.tool-head:hover{ background:rgba(61,48,43,.08); }
+.tool-chev::before{ content:"◂"; font-size:11px; opacity:.6; display:inline-block; }
+.tool-cat.open .tool-chev::before{ content:"▾"; }
+.tool-body{ display:none; flex-direction:column; gap:5px; padding:3px 9px 10px; }
+.tool-cat.open .tool-body{ display:flex; }
 .side-stamps{ display:flex; flex-direction:column; gap:5px; }
 /* كلّ ختمٍ زرٌّ على ورق: حدٌّ وحبرٌ بصبغته، خلفيةٌ فاتحة من لونه */
 .sidetools .stamp-btn{ width:100%; text-align:center; font-family:"Amiri",serif; font-weight:700; font-size:14px;
@@ -686,7 +699,8 @@ body[data-role="reader"] .sidetools{ display:none; }
   .sidetools{ position:static; transform:none; width:min(960px,100%); max-height:none;
     margin:12px auto 0; flex-direction:row; flex-wrap:wrap; align-items:center; }
   .sidetools .side-title{ flex:1 0 100%; border:0; padding:0; margin:0; }
-  .side-stamps{ flex-direction:row; flex-wrap:wrap; }
+  .tool-acc{ flex:1 0 100%; }
+  .tool-cat.open .tool-body{ flex-direction:row; flex-wrap:wrap; }
   .sidetools .stamp-btn{ width:auto; }
   .side-size{ border:0; padding:0; }
 }
@@ -1427,26 +1441,51 @@ body[data-panel] .panel-back{ display:flex; }
 <aside class="sidetools" id="sidetools">
   <div class="side-title">أدوات المكتب</div>
 
-  <div class="side-stamps side-write">
-    <button type="button" class="stamp-btn" style="--c:#A34239" data-t="مفصول"  data-c="#A32020">مفصول</button>
-    <button type="button" class="stamp-btn" style="--c:#A34239" data-t="سُرِّح"   data-c="#A32020">سُرِّح</button>
-    <button type="button" class="stamp-btn" style="--c:#326B42" data-t="بالخدمة" data-c="#006130">بالخدمة</button>
-    <button type="button" class="stamp-btn" style="--c:#3C82B4" data-t="إجازة"   data-c="#0E85FF">إجازة</button>
-    <button type="button" class="stamp-btn" style="--c:#E06A28" data-t="متغيّب"  data-c="#FB5F00">متغيّب</button>
-    <!-- مرفوض — ختمٌ أسود. الأسود النقيّ يُروَّض بشفافية الختم (.78) والمزج، فيخرج فحميّاً لائقاً -->
-    <button type="button" class="stamp-btn" style="--c:#241E18" data-t="مرفوض"  data-c="#000000">مرفوض</button>
-    <!-- الختم الرئاسي — خاتم العين، نصّه يُضبَط في JS -->
-    <button type="button" class="stamp-btn seal-btn" style="--c:#7A2230" data-c="#8A1C2C">ختم رئاسي</button>
-    <!-- ختم القبض — مربّع بحبرٍ أزرق، سطران؛ النصّ يُضبَط في JS ليحمل سطراً جديداً -->
-    <button type="button" class="stamp-btn box-btn" style="--c:#33489C" data-c="#123CDA">تمّ القبض</button>
-    <!-- النجمة — تأخذ لونها من عجلة الألوان أدناه، فتُضرَب بأيّ لون -->
-    <button type="button" class="stamp-btn star-btn" style="--c:#A3201F">★ نجمة</button>
-  </div>
+  <!-- أقسامٌ تُطوى وتُفتح — نافذةٌ واحدة مفتوحة. أصناف الأزرار تبقى كما هي فلا ينكسر ربطها. -->
+  <div class="tool-acc side-write" id="toolAcc">
 
-  <div class="side-free side-write">
-    <input type="text" id="stamptext" placeholder="ختم آخر…" autocomplete="off">
-    <input type="color" id="stampcolour" value="#5C4A63" title="صبغة الختم">
-    <button type="button" class="btn-strike" id="armstamp">ختم</button>
+    <div class="tool-cat">
+      <button type="button" class="tool-head" aria-expanded="false"><span class="tool-chev"></span><span>أدوات الأختام الوظيفيّة</span></button>
+      <div class="tool-body">
+        <button type="button" class="stamp-btn" style="--c:#A34239" data-t="مفصول"  data-c="#A32020">مفصول</button>
+        <button type="button" class="stamp-btn" style="--c:#A34239" data-t="سُرِّح"   data-c="#A32020">سُرِّح</button>
+        <button type="button" class="stamp-btn" style="--c:#326B42" data-t="بالخدمة" data-c="#006130">بالخدمة</button>
+        <button type="button" class="stamp-btn" style="--c:#3C82B4" data-t="إجازة"   data-c="#0E85FF">إجازة</button>
+        <button type="button" class="stamp-btn" style="--c:#E06A28" data-t="متغيّب"  data-c="#FB5F00">متغيّب</button>
+        <!-- مرفوض — ختمٌ أسود يُروَّض بشفافية الختم والمزج فيخرج فحميّاً لائقاً -->
+        <button type="button" class="stamp-btn" style="--c:#241E18" data-t="مرفوض"  data-c="#000000">مرفوض</button>
+      </div>
+    </div>
+
+    <div class="tool-cat">
+      <button type="button" class="tool-head" aria-expanded="false"><span class="tool-chev"></span><span>أدوات الأختام الإداريّة</span></button>
+      <div class="tool-body">
+        <!-- الختم الرئاسي — خاتم العين، نصّه يُضبَط في JS -->
+        <button type="button" class="stamp-btn seal-btn" style="--c:#7A2230" data-c="#8A1C2C">ختم رئاسي</button>
+      </div>
+    </div>
+
+    <div class="tool-cat">
+      <button type="button" class="tool-head" aria-expanded="false"><span class="tool-chev"></span><span>أدوات ختمٍ تنفيذيّة</span></button>
+      <div class="tool-body">
+        <!-- ختم القبض — مربّع بحبرٍ أزرق، سطران؛ النصّ يُضبَط في JS -->
+        <button type="button" class="stamp-btn box-btn" style="--c:#33489C" data-c="#123CDA">تمّ القبض</button>
+      </div>
+    </div>
+
+    <div class="tool-cat">
+      <button type="button" class="tool-head" aria-expanded="false"><span class="tool-chev"></span><span>أدوات أختامٍ عامّة</span></button>
+      <div class="tool-body">
+        <!-- النجمة — تأخذ لونها من عجلة الألوان، فتُضرَب بأيّ لون -->
+        <button type="button" class="stamp-btn star-btn" style="--c:#A3201F">★ نجمة</button>
+        <div class="side-free">
+          <input type="text" id="stamptext" placeholder="ختم آخر…" autocomplete="off">
+          <input type="color" id="stampcolour" value="#5C4A63" title="صبغة الختم">
+          <button type="button" class="btn-strike" id="armstamp">ختم</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <div class="side-size side-write">
@@ -1997,7 +2036,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     { t:"قيد العمل",   c:"#2f6fae" },
     { t:"قيد التنفيذ", c:"#5a49a8" },
     { t:"مؤجل",        c:"#b07a1e" },
-    { t:"منتهي",       c:"#6b5d4f" },
+    { t:"منجز",        c:"#6b5d4f" },
     { t:"مغلق",        c:"#8a1c2c" },
   ];
   function statusColor(s){ for(var i=0;i<CASE_STATUS.length;i++) if(CASE_STATUS[i].t===s) return CASE_STATUS[i].c; return "#6b5d4f"; }
@@ -2803,6 +2842,18 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   var starBtn = document.querySelector(".star-btn");
   if(starBtn) starBtn.addEventListener("click", function(){ arm(starBtn, "star", stampColourEl.value); });
   armEl.addEventListener("click", function(){ arm(armEl, (stampTextEl.value || "").trim() || "سُرِّح", stampColourEl.value); });
+
+  // أقسام أدوات المكتب — فتحُ عنوانٍ يطوي البقيّة (نافذةٌ واحدة مفتوحة)
+  Array.prototype.forEach.call(document.querySelectorAll("#toolAcc .tool-head"), function(head){
+    head.addEventListener("click", function(){
+      var cat = head.parentNode, wasOpen = cat.classList.contains("open");
+      Array.prototype.forEach.call(document.querySelectorAll("#toolAcc .tool-cat"), function(c){
+        c.classList.remove("open");
+        var h = c.querySelector(".tool-head"); if(h) h.setAttribute("aria-expanded", "false");
+      });
+      if(!wasOpen){ cat.classList.add("open"); head.setAttribute("aria-expanded", "true"); }
+    });
+  });
 
   // أزرار المقاس المُقبِل
   szUpEl.addEventListener("click", function(){ armSize = clampSz(armSize + 0.1); updateSzShow(); });
