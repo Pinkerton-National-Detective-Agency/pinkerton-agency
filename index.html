@@ -1462,6 +1462,23 @@ body[data-panel] .panel-back{ display:flex; }
     </div>
 
     <div class="tool-cat">
+      <button type="button" class="tool-head" aria-expanded="false"><span class="tool-chev"></span><span>أختام رتب الوكالة</span></button>
+      <div class="tool-body">
+        <!-- رُتَبٌ مستطيلة (box:) بحبرٍ رماديّ غامق -->
+        <button type="button" class="stamp-btn" style="--c:#4A4A4A" data-t="box:حارس مساعد"          data-c="#3A3A3A">حارس مساعد</button>
+        <button type="button" class="stamp-btn" style="--c:#4A4A4A" data-t="box:حارس وكالة"          data-c="#3A3A3A">حارس وكالة</button>
+        <button type="button" class="stamp-btn" style="--c:#4A4A4A" data-t="box:مساعد محقق"          data-c="#3A3A3A">مساعد محقق</button>
+        <button type="button" class="stamp-btn" style="--c:#4A4A4A" data-t="box:محقق"                data-c="#3A3A3A">محقق</button>
+        <button type="button" class="stamp-btn" style="--c:#4A4A4A" data-t="box:محقق خاص"            data-c="#3A3A3A">محقق خاص</button>
+        <button type="button" class="stamp-btn" style="--c:#4A4A4A" data-t="box:مساعد عميل"          data-c="#3A3A3A">مساعد عميل</button>
+        <button type="button" class="stamp-btn" style="--c:#4A4A4A" data-t="box:عميل"                data-c="#3A3A3A">عميل</button>
+        <button type="button" class="stamp-btn" style="--c:#4A4A4A" data-t="box:عميل خاص"            data-c="#3A3A3A">عميل خاص</button>
+        <button type="button" class="stamp-btn" style="--c:#4A4A4A" data-t="box:نائب رئيس البنكرتون" data-c="#3A3A3A">نائب رئيس البنكرتون</button>
+        <button type="button" class="stamp-btn" style="--c:#4A4A4A" data-t="box:رئيس البنكرتون"      data-c="#3A3A3A">رئيس البنكرتون</button>
+      </div>
+    </div>
+
+    <div class="tool-cat">
       <button type="button" class="tool-head" aria-expanded="false"><span class="tool-chev"></span><span>أدوات الأختام الإداريّة</span></button>
       <div class="tool-body">
         <!-- الختم الرئاسي — خاتم العين، نصّه يُضبَط في JS -->
@@ -2711,6 +2728,11 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     t = String(t);
     if(t.indexOf("seal:") === 0){ el.classList.add("eseal"); el.innerHTML = sealSVG(t.slice(5), uid); }
     else if(t === "star"){ el.classList.add("star"); el.innerHTML = STAR_SVG; }
+    else if(t.indexOf("box:") === 0){   // ختمٌ مستطيلٌ بسطرٍ واحد (رُتَب الوكالة)
+      el.classList.add("box");
+      var sp = document.createElement("span"); sp.className = "box-ar";
+      sp.textContent = t.slice(4); el.appendChild(sp);
+    }
     else if(t.indexOf("\n") >= 0){
       el.classList.add("box");
       t.split("\n").forEach(function(line){
