@@ -859,14 +859,17 @@ body[data-view="files"]   .cases{ display:block; }
 .leaders-head{ font-family:"Amiri",serif; font-weight:700; font-size:20px; color:var(--ink-press);
   text-align:center; letter-spacing:0; opacity:.85; margin:2px 0 20px;
   padding-bottom:9px; border-bottom:1px solid rgba(61,48,43,.22); }
-.leaders-row{ display:flex; flex-wrap:wrap; justify-content:center; align-items:flex-start; gap:18px; }
-.lead{ display:flex; flex-direction:column; align-items:center; gap:13px; width:256px; }
+.leaders-row{ display:flex; flex-wrap:wrap; justify-content:center; align-items:flex-start; gap:14px; }
+.lead{ display:flex; flex-direction:column; align-items:center; gap:13px; width:291px; }
+/* لوحة القيادة تستغلّ كامل عرض الورقة: نُخفي هامش التجليد ونقلّل الحاشية فتكبر الصور */
+body[data-view="leaders"] .leaf{ padding-inline:20px; }
+body[data-view="leaders"] .graphite{ display:none; }
 
 /* مساحة الصورة — إطار بورتريه كبيرٌ بحبرٍ، لتوضيح تفاصيل الوجه؛ بداخله ظلٌّ حين تخلو */
-.lead-photo{ position:relative; width:246px; height:326px; border:1.5px solid rgba(61,48,43,.55);
+.lead-photo{ position:relative; width:282px; height:374px; border:1.5px solid rgba(61,48,43,.55);
   border-radius:2px; background:rgba(255,252,245,.35); overflow:hidden; display:flex;
   align-items:center; justify-content:center; box-shadow:inset 0 0 0 3px rgba(120,92,64,.14); }
-.lead-photo .feat-silhouette{ width:130px; height:130px; opacity:.4; }
+.lead-photo .feat-silhouette{ width:150px; height:150px; opacity:.4; }
 .lead-photo img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
 body[data-role="owner"] .lead-photo, body[data-role="editor"] .lead-photo{ cursor:pointer; }
 body[data-role="owner"] .lead-photo:hover .feat-photo-hint,
