@@ -259,7 +259,7 @@ td.col-id .hand{
   font-size:13px; font-weight:400; line-height:1.3;
   letter-spacing:.03em;
   font-variant-numeric: tabular-nums;   /* أرقام متساوية العرض: تُطابَق بالعين عمودياً */
-  color:var(--ink) !important;
+  color:#292522 !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -311,17 +311,18 @@ td.col-id .hand{
 
 /* دورة الغمس — القلم يحمل بضع كلمات فقط: غامق ← فاتح ← غامق عند إعادة الغمس.
    نضبط font-palette و color معاً: خط ملوّن ← اللوحة تفوز؛ خط بديل ← color يفوز. */
-@font-palette-values --dip1{ font-family:"Aref Ruqaa Ink"; override-colors: 0 #7D5C44, 1 #49382D; }
-@font-palette-values --dip2{ font-family:"Aref Ruqaa Ink"; override-colors: 0 #866445, 1 #54402F; }
-@font-palette-values --dip3{ font-family:"Aref Ruqaa Ink"; override-colors: 0 #90714F, 1 #624836; }
-@font-palette-values --dip4{ font-family:"Aref Ruqaa Ink"; override-colors: 0 #A57E61, 1 #6F5340; }
-@font-palette-values --dip5{ font-family:"Aref Ruqaa Ink"; override-colors: 0 #7D5C44, 1 #49382D; }
+/* حبر الكتابة: أسود حبريّ موحّد #292522 (الطبقة ١ = المتن، الطبقة ٠ = حافّةٌ أفتح قليلاً) */
+@font-palette-values --dip1{ font-family:"Aref Ruqaa Ink"; override-colors: 0 #322d28, 1 #292522; }
+@font-palette-values --dip2{ font-family:"Aref Ruqaa Ink"; override-colors: 0 #322d28, 1 #292522; }
+@font-palette-values --dip3{ font-family:"Aref Ruqaa Ink"; override-colors: 0 #322d28, 1 #292522; }
+@font-palette-values --dip4{ font-family:"Aref Ruqaa Ink"; override-colors: 0 #322d28, 1 #292522; }
+@font-palette-values --dip5{ font-family:"Aref Ruqaa Ink"; override-colors: 0 #322d28, 1 #292522; }
 
-td:nth-child(1) .hand{ font-palette:--dip1; color:var(--ink-core); }
-td:nth-child(2) .hand{ font-palette:--dip2; color:#54402F; }
-td:nth-child(3) .hand{ font-palette:--dip3; color:var(--ink); }
-td:nth-child(4) .hand{ font-palette:--dip4; color:var(--ink-pale); }
-td:nth-child(5) .hand{ font-palette:--dip5; color:var(--ink-core); }
+td:nth-child(1) .hand{ font-palette:--dip1; color:#292522; }
+td:nth-child(2) .hand{ font-palette:--dip2; color:#292522; }
+td:nth-child(3) .hand{ font-palette:--dip3; color:#292522; }
+td:nth-child(4) .hand{ font-palette:--dip4; color:#292522; }
+td:nth-child(5) .hand{ font-palette:--dip5; color:#292522; }
 
 /* القناع مفتوح تماماً دائماً. لم يعد ثمّة كنسٌ يرسم النصّ:
    أنت تكتب الحرف بيدك فيظهر بحبر الرقعة فور ضغطك المفتاح — وإعادة رسم
@@ -370,7 +371,7 @@ td.col-id .hand{ --min-size: 11px; }
    إسقاط المرشّح هنا ليس تنازلاً تقنياً بل الفيزياء نفسها — النزّ والهالة يحدثان أثناء الجفاف،
    لا لحظة ملامسة السنّ. ويحلّ مشكلة حقيقية بالمجّان: المؤشّر النصّي داخل عنصر مُرشَّح
    يُنقَّط مع الطبقة فيرتعش أو يختفي. */
-td.editing .hand{ filter:none; color:#6B4A24 !important; }
+td.editing .hand{ filter:none; color:#33302B !important; }
 td.editing .sweep{ -webkit-mask-image:none; mask-image:none; opacity:1; }
 
 /* الخانة المقصودة — بلا إطار أزرق وبلا صندوق: أثر إصبع الكاتب على الورقة،
