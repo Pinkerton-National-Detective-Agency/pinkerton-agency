@@ -1012,65 +1012,44 @@ body.arming .case-signzone .case-stamps{ pointer-events:none !important; }
 .case-del:hover{ opacity:1; background:rgba(138,28,44,.08); }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   كتيب القوانين — ميثاقٌ منظّم: ترويسةٌ (عنوان + إصدار + آخر تحديث)، قاعدةٌ ذهبيّة،
-   ثمّ موادُّ بعناوين وبنودٍ مرقّمة ونقاطٍ فرعيّة. كلّه بحبر المطبعة على الورق.
+   كتيب القوانين — صفحاتٌ تُكتَب مباشرةً على الورق. ترويسةٌ (إصدار + آخر تحديث)،
+   ثمّ صفحةٌ نصّية تُكتب فيها القوانين، وتصفّحٌ وإضافةُ صفحات أسفلها.
    ═══════════════════════════════════════════════════════════════════════════ */
 .charter{ display:none; position:relative; z-index:2; padding:2px 6px 12px; max-width:760px; margin:0 auto;
   font-family:"Amiri",serif; color:var(--ink-press); }
-.charter-doc{ position:relative; }
 
-.charter-head{ text-align:center; padding-bottom:12px; margin-bottom:6px; border-bottom:2px solid rgba(61,48,43,.4); }
-.charter-title{ font-family:"Amiri",serif; font-weight:700; font-size:26px; color:var(--ink); margin:0 0 8px;
-  letter-spacing:0; line-height:1.35; }
-.charter-meta{ display:flex; justify-content:center; flex-wrap:wrap; gap:8px 22px; font-size:13.5px; color:var(--ink-press); opacity:.8; }
-.charter-meta .charter-ver{ font-weight:700; }
-.charter-meta .charter-ver::before{ content:"◆ "; opacity:.5; }
-.charter-meta .charter-upd::before{ content:"◆ "; opacity:.5; }
+/* الترويسة — الإصدار (قابل للتحرير) + آخر تحديث */
+.charter-topbar{ display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:6px 18px;
+  padding-bottom:9px; margin-bottom:12px; border-bottom:2px solid rgba(61,48,43,.4); font-size:14px; color:var(--ink-press); }
+.charter-verwrap{ font-weight:700; }
+.charter-ver{ display:inline-block; min-width:34px; font-family:"Old Standard TT",serif; color:var(--ink); outline:none;
+  direction:ltr; border-bottom:1px dashed rgba(61,48,43,.35); padding:0 5px; }
+.charter-ver:empty::before{ content:attr(data-ghost); color:var(--graphite); opacity:.45; }
+.charter-ver[contenteditable="false"]{ border-bottom:0; }
+.charter-upd{ opacity:.8; }
+.charter-upd::before{ content:"◆ "; opacity:.5; }
 
-/* القاعدة الذهبية — لوحٌ بارزٌ بإطارٍ مزدوج وتظليلٍ دافئ */
-.charter-golden{ position:relative; margin:16px 0 20px; padding:13px 18px; border:1.5px solid rgba(120,92,64,.55);
-  border-radius:2px; background:linear-gradient(rgba(201,164,110,.16), rgba(201,164,110,.07));
-  box-shadow:inset 0 0 0 3px rgba(255,252,245,.28); text-align:center; }
-.charter-golden::before{ content:""; position:absolute; inset:4px; border:1px solid rgba(120,92,64,.3); border-radius:1px; pointer-events:none; }
-.charter-golden-label{ display:block; font-weight:700; font-size:13px; letter-spacing:.04em; color:var(--stamp-red);
-  opacity:.85; margin-bottom:4px; text-transform:none; }
-.charter-golden-text{ display:block; font-family:"Amiri",serif; font-weight:700; font-size:18px; line-height:1.8; color:var(--ink); }
+/* الصفحة — نُكتب فيها مباشرةً؛ حبرٌ على ورق، بلا صندوقٍ ولا إطار */
+.charter-page{ display:block; width:100%; min-height:460px; resize:none; overflow:hidden;
+  background:transparent; border:0; outline:none; color:var(--ink-press);
+  font-family:"Amiri",serif; font-size:18px; line-height:2.05; padding:2px 2px 8px; }
+.charter-page::placeholder{ color:var(--graphite); opacity:.4; }
+.charter-page[readonly]{ cursor:default; }
 
-/* المادّة — عنوانٌ بخطٍّ سفليّ، ثمّ بنودٌ مرقّمة عربيّاً */
-.charter-article{ margin:0 0 18px; }
-.charter-art-title{ font-family:"Amiri",serif; font-weight:700; font-size:20px; color:var(--ink); margin:0 0 8px;
-  padding-bottom:5px; border-bottom:1px solid rgba(61,48,43,.28); }
-.charter-intro{ font-size:16px; line-height:1.9; margin:0 0 8px; color:var(--ink-press); }
-.charter-clauses{ margin:0; padding-inline-start:30px; list-style:arabic-indic; }
-.charter-clauses > li{ font-size:16px; line-height:2; margin:0 0 5px; padding-inline-start:6px; }
-.charter-clauses > li::marker{ font-family:"Old Standard TT",serif; font-weight:700; color:var(--ink); }
-.charter-subs{ margin:5px 0 8px; padding-inline-start:22px; list-style:none; }
-.charter-subs > li{ position:relative; font-size:15px; line-height:1.85; color:var(--ink-press); padding-inline-start:16px; }
-.charter-subs > li::before{ content:"—"; position:absolute; inset-inline-start:0; color:var(--ink-press); opacity:.6; }
-.charter-empty{ text-align:center; opacity:.5; padding:24px 0; font-size:15px; }
-
-/* زرّ التحرير — يظهر للمحرّرين فقط */
-.charter-edit-btn{ display:block; margin:18px auto 0; font-family:"Amiri",serif; font-weight:700; font-size:14px; cursor:pointer;
-  background:var(--ink-press); color:var(--paper-hi); border:0; border-radius:2px; padding:7px 18px; box-shadow:0 2px 0 0 rgba(47,36,28,.5); }
-.charter-edit-btn:hover{ background:#2F241C; }
-body:not([data-role="owner"]):not([data-role="editor"]) .charter-edit-btn{ display:none !important; }
-
-/* محرّر المصدر — يحلّ محلّ العرض عند التحرير */
-.charter-editor{ display:none; margin-top:8px; }
-.charter[data-editing] .charter-doc,
-.charter[data-editing] .charter-edit-btn{ display:none; }
-.charter[data-editing] .charter-editor{ display:block; }
-.charter-editor-hint{ font-size:12.5px; color:var(--ink-press); opacity:.75; line-height:1.9; margin-bottom:7px; }
-.charter-editor-hint b{ color:var(--stamp-red); }
-.charter-editor textarea{ width:100%; min-height:340px; resize:vertical; background:rgba(255,252,245,.5);
-  border:1px solid rgba(61,48,43,.4); border-radius:2px; color:var(--ink-press); font-family:"Amiri",serif;
-  font-size:16px; line-height:1.9; padding:12px 14px; outline:none; }
-.charter-editor textarea:focus{ border-color:rgba(61,48,43,.7); }
-.charter-editor-actions{ display:flex; gap:8px; margin-top:9px; }
-.charter-editor-actions button{ font-family:"Amiri",serif; font-weight:700; font-size:14px; cursor:pointer; border-radius:2px;
-  padding:6px 16px; background:rgba(61,48,43,.08); color:var(--ink-press); border:1px solid rgba(61,48,43,.4); }
-.charter-editor-actions #charterSave{ background:var(--ink-press); color:var(--paper-hi); border:0; }
-.charter-editor-actions button:hover{ filter:brightness(1.08); }
+/* شريط التصفّح — نفس روح مصفّح الملازم + أدوات الصفحات */
+.charter-nav{ display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:8px 16px;
+  margin-top:10px; padding-top:10px; border-top:1px solid rgba(61,48,43,.22); }
+.charter-nav button{ font-family:"Amiri",serif; font-size:13px; letter-spacing:0; cursor:pointer;
+  background:transparent; border:0; color:var(--ink-press); opacity:.75; padding:2px 8px; }
+.charter-nav button:disabled{ opacity:.22; cursor:default; }
+.charter-nav button:not(:disabled):hover{ opacity:1; }
+.charter-folio{ font-family:"Amiri",serif; font-size:13px; color:var(--ink-press); opacity:.7; min-width:96px; text-align:center; }
+.charter-navtools{ display:inline-flex; gap:8px; padding-inline-start:10px; border-inline-start:1px solid rgba(61,48,43,.2); }
+.charter-addpage{ font-weight:700; border:1px solid rgba(61,48,43,.4) !important; border-radius:2px; }
+.charter-addpage:hover{ background:rgba(61,48,43,.08); }
+.charter-delpage{ color:#8a1c2c !important; }
+/* القارئ لا يحرّر ولا يضيف/يحذف صفحات */
+body:not([data-role="owner"]):not([data-role="editor"]) .charter-navtools{ display:none !important; }
 
 .pager{ display:flex; align-items:center; justify-content:center; gap:16px;
         margin-top:12px; position:relative; z-index:2; }
@@ -1447,17 +1426,21 @@ body[data-panel] .panel-back{ display:flex; }
     <input type="file" id="caseFile" accept="image/*" hidden>
   </section>
 
-  <!-- كتيب القوانين — ميثاقٌ منظّم يُبنى في JS من نصٍّ مصدر (charter.src). -->
+  <!-- كتيب القوانين — صفحاتٌ تُكتَب مباشرةً؛ تصفّحٌ وإضافةُ صفحات. تبدأ فاضية. -->
   <section class="charter" id="charter" aria-label="كتيب القوانين">
-    <div class="charter-doc" id="charterDoc"></div>
-    <button type="button" class="charter-edit-btn" id="charterEditBtn">✎ تحرير الميثاق</button>
-    <div class="charter-editor">
-      <div class="charter-editor-hint">صيغة الكتابة — عنوان مادّة: <b>#</b> أو ابدأ بـ«المادة» · بندٌ مرقّم: <b>-</b> أو <b>1.</b> · نقطة فرعيّة: <b>•</b> · الترويسة: <b>العنوان:</b> · <b>الإصدار:</b> · <b>ذهبية:</b></div>
-      <textarea id="charterEdit" spellcheck="false" dir="rtl"></textarea>
-      <div class="charter-editor-actions">
-        <button type="button" id="charterSave" class="btn-strike">حفظ</button>
-        <button type="button" id="charterCancel">إلغاء</button>
-      </div>
+    <div class="charter-topbar">
+      <span class="charter-verwrap">الإصدار <span class="charter-ver" id="charterVer" data-ghost="١.٠"></span></span>
+      <span class="charter-upd" id="charterUpd"></span>
+    </div>
+    <textarea class="charter-page" id="charterPage" dir="rtl" spellcheck="false" placeholder="اكتب القوانين هنا مباشرةً…"></textarea>
+    <div class="charter-nav">
+      <button type="button" id="charterPrev">الصفحة السابقة ›</button>
+      <span class="charter-folio" id="charterFolio"></span>
+      <button type="button" id="charterNext">‹ الصفحة التالية</button>
+      <span class="charter-navtools">
+        <button type="button" id="charterAddPage" class="charter-addpage">＋ صفحة جديدة</button>
+        <button type="button" id="charterDelPage" class="charter-delpage">حذف الصفحة</button>
+      </span>
     </div>
   </section>
 
@@ -1695,8 +1678,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
         leadersEl = $("leaders"), leadFileEl = $("leadFile"),
         casesEl = $("cases"), casesListEl = $("casesList"), caseDetailEl = $("caseDetail"),
         caseFileEl = $("caseFile"), caseAddEl = $("caseAdd"),
-        charterEl = $("charter"), charterDocEl = $("charterDoc"), charterEditEl = $("charterEdit"),
-        charterEditBtn = $("charterEditBtn"), charterSaveBtn = $("charterSave"), charterCancelBtn = $("charterCancel");
+        charterEl = $("charter"), charterPageEl = $("charterPage"), charterVerEl = $("charterVer"),
+        charterUpdEl = $("charterUpd"), charterFolioEl = $("charterFolio"),
+        charterPrevEl = $("charterPrev"), charterNextEl = $("charterNext"),
+        charterAddEl = $("charterAddPage"), charterDelEl = $("charterDelPage");
 
   const esc = s => String(s == null ? "" : s).replace(/[<&>"]/g, c => ({ "<":"&lt;","&":"&amp;",">":"&gt;",'"':"&quot;" }[c]));
 
@@ -2387,25 +2372,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     }catch(e){}
   }
 
-  // ── كتيب القوانين — ميثاقٌ منظّم من نصٍّ مصدر ───────────────────────────────
-  // نصٌّ واحد src يُحلَّل إلى: عنوان + إصدار + قاعدة ذهبية + موادّ (عنوان/تمهيد/بنود/نقاط).
-  var charterData = { src:"", updated_at:null };
-  function parseCharter(src){
-    var doc = { title:"", version:"", golden:"", articles:[] }, cur = null, clause = null;
-    String(src || "").split(/\r?\n/).forEach(function(raw){
-      var t = raw.trim(); if(!t) return; var m;
-      if(m = t.match(/^(?:العنوان|عنوان)\s*[:：]\s*(.*)$/))            { doc.title   = m[1]; return; }
-      if(m = t.match(/^(?:الإصدار|الاصدار|إصدار|اصدار)\s*[:：]\s*(.*)$/)){ doc.version = m[1]; return; }
-      if(m = t.match(/^(?:القاعدة الذهبية|ذهبية)\s*[:：]\s*(.*)$/))     { doc.golden  = m[1]; return; }
-      if(m = t.match(/^#\s+(.*)$/))     { cur = { heading:m[1], intro:"", clauses:[] }; doc.articles.push(cur); clause = null; return; }
-      if(/^المادة(?:[\s:：]|$)/.test(t)) { cur = { heading:t,    intro:"", clauses:[] }; doc.articles.push(cur); clause = null; return; }
-      if(m = t.match(/^[•*▪◦●]\s*(.*)$/)){ if(clause) clause.subs.push(m[1]); else if(cur){ clause = { text:m[1], subs:[] }; cur.clauses.push(clause); } return; }
-      if(m = t.match(/^(?:[-–]|[0-9]+[\.\)]|[٠-٩]+[\.\)])\s*(.*)$/)){ if(cur){ clause = { text:m[1], subs:[] }; cur.clauses.push(clause); } return; }
-      if(cur && !cur.clauses.length)    { cur.intro = cur.intro ? cur.intro + " " + t : t; return; }
-      if(!doc.title && !cur)            { doc.title = t; return; }
-    });
-    return doc;
-  }
+  // ── كتيب القوانين — صفحاتٌ تُكتَب مباشرةً (بلا وضع تحرير) ──────────────────────
+  // القوانين تُكتب في الصفحة مباشرةً وتُحفظ تلقائياً. صفحاتٌ نصّية (pages jsonb) +
+  // إصدارٌ + آخر تحديث. «التالي/السابق» تتصفّح، و«＋ صفحة جديدة» تضيف.
+  var charterPages = [""], charterPage = 0, charterVer = "", charterUpd = null, charterSaveT = null;
   function fmtCharterDate(ts){
     if(!ts) return "";
     var d = new Date(ts); if(isNaN(d.getTime())) return "";
@@ -2415,76 +2385,84 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
       return s;
     }catch(e){ return arNum(d.getDate()) + "/" + arNum(d.getMonth()+1) + "/" + arNum(d.getFullYear()); }
   }
-  function renderCharter(){
-    if(!charterDocEl) return;
-    var doc = parseCharter(charterData.src);
-    charterDocEl.textContent = "";
-    if(!doc.title && !doc.golden && !doc.articles.length){
-      var e = document.createElement("p"); e.className = "charter-empty";
-      e.textContent = canWrite() ? "لا ميثاق بعد — اضغط «تحرير الميثاق»." : "لا ميثاق بعد.";
-      charterDocEl.appendChild(e); return;
-    }
-    var head = document.createElement("div"); head.className = "charter-head";
-    var h = document.createElement("h2"); h.className = "charter-title"; h.textContent = doc.title || "كتيب القوانين"; head.appendChild(h);
-    var meta = document.createElement("div"); meta.className = "charter-meta";
-    var ver = document.createElement("span"); ver.className = "charter-ver"; ver.textContent = "الإصدار " + (doc.version || "—"); meta.appendChild(ver);
-    var upd = document.createElement("span"); upd.className = "charter-upd"; upd.textContent = "آخر تحديث: " + (fmtCharterDate(charterData.updated_at) || "—"); meta.appendChild(upd);
-    head.appendChild(meta); charterDocEl.appendChild(head);
-
-    if(doc.golden){
-      var g = document.createElement("div"); g.className = "charter-golden";
-      var gl = document.createElement("span"); gl.className = "charter-golden-label"; gl.textContent = "القاعدة الذهبية";
-      var gt = document.createElement("span"); gt.className = "charter-golden-text"; gt.textContent = doc.golden;
-      g.appendChild(gl); g.appendChild(gt); charterDocEl.appendChild(g);
-    }
-    doc.articles.forEach(function(a){
-      var sec = document.createElement("section"); sec.className = "charter-article";
-      var at = document.createElement("h3"); at.className = "charter-art-title"; at.textContent = a.heading; sec.appendChild(at);
-      if(a.intro){ var ip = document.createElement("p"); ip.className = "charter-intro"; ip.textContent = a.intro; sec.appendChild(ip); }
-      if(a.clauses.length){
-        var ol = document.createElement("ol"); ol.className = "charter-clauses";
-        a.clauses.forEach(function(c){
-          var li = document.createElement("li"); li.className = "charter-clause"; li.appendChild(document.createTextNode(c.text));
-          if(c.subs && c.subs.length){
-            var ul = document.createElement("ul"); ul.className = "charter-subs";
-            c.subs.forEach(function(s){ var sl = document.createElement("li"); sl.textContent = s; ul.appendChild(sl); });
-            li.appendChild(ul);
-          }
-          ol.appendChild(li);
-        });
-        sec.appendChild(ol);
-      }
-      charterDocEl.appendChild(sec);
-    });
+  function charterEditingNow(){ var a = document.activeElement; return a === charterPageEl || a === charterVerEl; }
+  function charterAutoGrow(){ if(!charterPageEl) return; charterPageEl.style.height = "auto"; charterPageEl.style.height = Math.max(460, charterPageEl.scrollHeight) + "px"; }
+  // force=true: نُحمّل قيمة الصفحة حتى لو كان المربّع مركّزاً — للتنقّل المحلّي (نحن مَن غيّر الصفحة).
+  // بلا force: نتخطّى التحميل عند التركيز كي لا يُنتزَع مؤشّر الكتابة أثناء تحديثٍ فوريّ بعيد.
+  function renderCharter(force){
+    if(!charterPageEl) return;
+    var w = canWrite();
+    if(charterPage < 0) charterPage = 0;
+    if(charterPage > charterPages.length - 1) charterPage = charterPages.length - 1;
+    if(charterVerEl && charterVerEl !== document.activeElement) charterVerEl.textContent = charterVer || "";
+    if(charterUpdEl) charterUpdEl.textContent = "آخر تحديث: " + (fmtCharterDate(charterUpd) || "—");
+    if(force || charterPageEl !== document.activeElement){ charterPageEl.value = charterPages[charterPage] || ""; charterAutoGrow(); }
+    charterPageEl.readOnly = !w;
+    if(charterVerEl) charterVerEl.setAttribute("contenteditable", w ? "plaintext-only" : "false");
+    if(charterFolioEl) charterFolioEl.textContent = "صفحة " + arNum(charterPage + 1) + " من " + arNum(charterPages.length);
+    if(charterPrevEl) charterPrevEl.disabled = (charterPage <= 0);
+    if(charterNextEl) charterNextEl.disabled = (charterPage >= charterPages.length - 1);
   }
+  function syncCharterPage(){ if(charterPageEl) charterPages[charterPage] = charterPageEl.value; }
   async function loadCharter(){
     try{
       var res = await sb.from("charter").select("*").eq("id", 1).maybeSingle();
-      if(!res.error && res.data){ charterData.src = res.data.src || ""; charterData.updated_at = res.data.updated_at; }
-      if(!(charterEl && charterEl.hasAttribute("data-editing"))) renderCharter();
+      if(!res.error && res.data){
+        charterVer = res.data.version || "";
+        var p = res.data.pages;
+        charterPages = (Array.isArray(p) && p.length) ? p.slice() : [""];
+        charterUpd = res.data.updated_at;
+      }
+      if(!charterEditingNow()) renderCharter();
     }catch(e){}
   }
-  function openCharterEditor(){ if(!charterEl) return; charterEditEl.value = charterData.src || ""; charterEl.setAttribute("data-editing", "1"); charterEditEl.focus(); }
-  function closeCharterEditor(){ if(charterEl) charterEl.removeAttribute("data-editing"); }
   async function saveCharter(){
-    var src = charterEditEl.value;
-    var res = await sb.from("charter").update({ src: src }).eq("id", 1).select().single();
-    if(res.error){ toast("تعذّر حفظ الميثاق: " + res.error.message, true); return; }
-    charterData.src = res.data.src || ""; charterData.updated_at = res.data.updated_at;
-    closeCharterEditor(); renderCharter(); toast("حُفظ الميثاق");
+    if(!canWrite()) return;
+    var res = await sb.from("charter").update({ version: charterVer, pages: charterPages }).eq("id", 1).select().single();
+    if(res.error){ toast("تعذّر حفظ القوانين: " + res.error.message, true); return; }
+    charterUpd = res.data.updated_at;
+    if(charterUpdEl) charterUpdEl.textContent = "آخر تحديث: " + (fmtCharterDate(charterUpd) || "—");
+  }
+  function scheduleCharterSave(){ if(charterSaveT) clearTimeout(charterSaveT); charterSaveT = setTimeout(saveCharter, 700); }
+  function charterGo(delta){
+    syncCharterPage();
+    var n = charterPage + delta; if(n < 0 || n > charterPages.length - 1) return;
+    charterPage = n; renderCharter(true); if(canWrite() && charterPageEl) charterPageEl.focus();
+  }
+  function charterAddPage(){
+    if(!canWrite()) return;
+    syncCharterPage(); charterPages.push(""); charterPage = charterPages.length - 1;
+    renderCharter(true); if(charterSaveT){ clearTimeout(charterSaveT); charterSaveT = null; } saveCharter(); charterPageEl.focus();
+  }
+  function charterDelPage(){
+    if(!canWrite()) return;
+    syncCharterPage();
+    if(charterSaveT){ clearTimeout(charterSaveT); charterSaveT = null; }   // لا حفظٌ مؤجّلٌ يكتب حالةً قديمة
+    if(charterPages.length <= 1){ charterPages = [""]; charterPage = 0; renderCharter(true); saveCharter(); return; }
+    if((charterPages[charterPage] || "").trim() && !window.confirm("حذف هذه الصفحة وما فيها نهائياً؟")) return;
+    charterPages.splice(charterPage, 1);
+    if(charterPage > charterPages.length - 1) charterPage = charterPages.length - 1;
+    renderCharter(true); saveCharter();
   }
   var charterWired = false;
   function wireCharter(){
-    if(!charterEl) return;
+    if(!charterPageEl) return;
     loadCharter();
     if(charterWired) return; charterWired = true;
-    if(charterEditBtn && canWrite()) charterEditBtn.addEventListener("click", openCharterEditor);
-    if(charterSaveBtn) charterSaveBtn.addEventListener("click", saveCharter);
-    if(charterCancelBtn) charterCancelBtn.addEventListener("click", closeCharterEditor);
+    charterPageEl.addEventListener("input", function(){ if(!canWrite()) return; charterPages[charterPage] = charterPageEl.value; charterAutoGrow(); scheduleCharterSave(); });
+    charterPageEl.addEventListener("blur", function(){ if(!canWrite()) return; syncCharterPage(); if(charterSaveT){ clearTimeout(charterSaveT); charterSaveT = null; } saveCharter(); });
+    if(charterVerEl){
+      charterVerEl.addEventListener("blur", function(){ if(!canWrite()) return; charterVer = charterVerEl.textContent.replace(/\s+/g, " ").trim(); saveCharter(); });
+      charterVerEl.addEventListener("paste", function(ev){ ev.preventDefault(); var t = (ev.clipboardData || window.clipboardData).getData("text").replace(/\s+/g, " "); document.execCommand("insertText", false, t); });
+    }
+    if(charterPrevEl) charterPrevEl.addEventListener("click", function(){ charterGo(-1); });
+    if(charterNextEl) charterNextEl.addEventListener("click", function(){ charterGo(1); });
+    if(charterAddEl) charterAddEl.addEventListener("click", charterAddPage);
+    if(charterDelEl) charterDelEl.addEventListener("click", charterDelPage);
     try{
       sb.channel("charter-live")
         .on("postgres_changes", { event:"*", schema:"public", table:"charter" }, function(){
-          if(charterEl.hasAttribute("data-editing")) return;   // لا نُطيح بما يكتبه المحرّر
+          if(charterEditingNow()) return;   // لا نُطيح بما يكتبه المحرّر الآن
           loadCharter();
         }).subscribe();
     }catch(e){}
