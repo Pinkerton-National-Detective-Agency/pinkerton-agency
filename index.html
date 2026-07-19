@@ -927,6 +927,17 @@ body:not([data-role="owner"]):not([data-role="editor"]) .cases-add{ display:none
   white-space:nowrap; opacity:.9; mix-blend-mode:multiply; }
 .case-status:empty{ display:none; }
 
+/* وسم الموافقة (قيد المراجعة/مخفيّة) + شريط الاعتماد في الملفّ المفتوح */
+.case-approval{ font-family:"Amiri",serif; font-weight:700; font-size:12px; letter-spacing:0;
+  color:var(--ac,#b07a1e); border:1.3px solid var(--ac,#b07a1e); border-radius:2px; padding:2px 9px;
+  white-space:nowrap; opacity:.92; mix-blend-mode:multiply; }
+.case-approval.big{ font-size:14px; padding:4px 14px; }
+.case-approval-bar{ display:flex; align-items:center; flex-wrap:wrap; gap:8px 12px; margin:8px 0 2px; }
+.case-ap-btn{ font-family:"Amiri",serif; font-weight:700; font-size:13px; cursor:pointer; border-radius:2px;
+  padding:5px 13px; background:rgba(61,48,43,.08); color:var(--ink-press); border:1px solid rgba(61,48,43,.4); }
+.case-ap-btn:hover:not(:disabled){ background:rgba(61,48,43,.16); }
+.case-ap-btn:disabled{ opacity:.4; cursor:default; }
+
 /* ── الملفّ المفتوح ────────────────────────────────────────────────────────── */
 .case-detail-inner{ display:flex; flex-direction:column; gap:16px; }
 .case-close{ align-self:flex-start; font-family:"Amiri",serif; font-weight:700; font-size:14px; cursor:pointer;
@@ -1636,8 +1647,10 @@ body[data-panel] .panel-back{ display:flex; }
     <h2>الطلبات والصلاحيات</h2>
     <p class="latin">Grants &amp; Pending Requests</p>
 
-    <div class="panel-sec">طلبات قيد النظر</div>
-    <div id="pendingList"><p class="panel-empty">لا طلبات.</p></div>
+    <div id="pendingSection">
+      <div class="panel-sec">طلبات قيد النظر</div>
+      <div id="pendingList"><p class="panel-empty">لا طلبات.</p></div>
+    </div>
 
     <div class="panel-sec">الأعضاء المخوَّلون</div>
     <div id="memberList"><p class="panel-empty">…</p></div>
@@ -2163,6 +2176,28 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   function caseById(id){ for(var i=0;i<casesData.length;i++) if(casesData[i].id===id) return casesData[i]; return null; }
   function casesEditingNow(){ var a = document.activeElement; return !!(a && a.closest && a.closest("#cases [contenteditable]")); }
 
+  // ── الموافقة على القضايا (المرحلة ٢) ───────────────────────────────────────
+  function approvalOf(c){ return (c && c.approval) || "pending"; }
+  function approvalMeta(a){
+    if(a === "official") return { label:"رسميّة",      color:"#2f7d4f" };
+    if(a === "hidden")   return { label:"مخفيّة",       color:"#8a1c2c" };
+    return                      { label:"قيد المراجعة", color:"#b07a1e" };   // pending
+  }
+  // مَن يعدّل قضيّة: الطاقم (عميل خاص فأعلى/المالك)، أو صاحبها؛ والقديمة (بلا صاحب) لأيّ محرّر.
+  function canEditCase(c){
+    if(canApproveCase()) return true;                  // الطاقم (عميل خاص فأعلى/المالك)
+    if(!canWrite()) return false;                       // القارئ لا يعدّل ولو كان مسجَّلاً صاحباً قديماً
+    if(c && c.created_by) return c.created_by === uid;  // صاحبها
+    return true;                                        // محرّرٌ وقضيّةٌ قديمة بلا صاحب
+  }
+  async function setApproval(c, target){
+    if(!canApproveCase()) return;
+    var res = await sb.from("cases").update({ approval: target }).eq("id", c.id).select().single();
+    if(res.error){ toast("تعذّر تغيير الحالة: " + res.error.message, true); return; }
+    c.approval = target; renderCases();
+    toast(target === "official" ? "اعتُمدت القضيّة" : target === "hidden" ? "أُخفيت القضيّة" : "أُعيدت قيد المراجعة");
+  }
+
   function caseLabel(t){ var d = document.createElement("div"); d.className = "case-field-label"; d.textContent = t; return d; }
   function pastePlain(el){ el.addEventListener("paste", function(ev){
     ev.preventDefault(); var t = (ev.clipboardData || window.clipboardData).getData("text").replace(/\s+/g, " ");
@@ -2226,7 +2261,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
       el.style.setProperty("--rot", (st.rot || 0) + "deg");
       el.style.setProperty("--stamp-scale", st.sz || 1);
       el.style.setProperty("--stamp-colour", st.c || "#A3201F");
-      if(canWrite()){
+      var _c = caseById(id);
+      if(_c && canEditCase(_c)){                        // رفعُ الختم لمن يعدّل هذه القضيّة فقط (لا لأيّ محرّر)
         el.title = "انقر لرفعه";
         el.addEventListener("click", function(ev){
           ev.stopPropagation();
@@ -2258,16 +2294,38 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     var st = document.createElement("span"); st.className = "case-status";
     if(c.status){ st.textContent = c.status; st.style.setProperty("--sc", statusColor(c.status)); }
     b.appendChild(no); b.appendChild(nm); b.appendChild(st);
+    var ap = approvalOf(c);
+    if(ap !== "official"){                                   // الرسميّة بلا وسم؛ المعلّقة والمخفيّة بوسم
+      var apt = document.createElement("span"); apt.className = "case-approval";
+      var m = approvalMeta(ap); apt.textContent = m.label; apt.style.setProperty("--ac", m.color);
+      b.appendChild(apt);
+    }
     b.addEventListener("click", function(){ openCaseId = c.id; renderCases(); window.scrollTo({ top:0 }); });
     return b;
   }
   function buildDetail(c){
-    var w = canWrite(), root = document.createElement("div"); root.className = "case-detail-inner";
+    var w = canEditCase(c), root = document.createElement("div"); root.className = "case-detail-inner";
 
     var close = document.createElement("button"); close.type = "button"; close.className = "case-close";
     close.textContent = "▸ طيّ الملف — عودةٌ للقائمة";
     close.addEventListener("click", function(){ openCaseId = null; renderCases(); });
     root.appendChild(close);
+
+    // شريط الاعتماد — حالة القضية + أزرار (رسميّة/إخفاء/قيد المراجعة) للطاقم فأعلى
+    var apbar = document.createElement("div"); apbar.className = "case-approval-bar";
+    var ap = approvalOf(c), apm = approvalMeta(ap);
+    var aptag = document.createElement("span"); aptag.className = "case-approval big";
+    aptag.textContent = apm.label; aptag.style.setProperty("--ac", apm.color);
+    apbar.appendChild(aptag);
+    if(canApproveCase()){
+      [["اعتماد رسميّة","official"],["إخفاء","hidden"],["قيد المراجعة","pending"]].forEach(function(pair){
+        var btn = document.createElement("button"); btn.type = "button"; btn.className = "case-ap-btn"; btn.textContent = pair[0];
+        if(ap === pair[1]) btn.disabled = true;
+        btn.addEventListener("click", function(){ setApproval(c, pair[1]); });
+        apbar.appendChild(btn);
+      });
+    }
+    root.appendChild(apbar);
 
     var head = document.createElement("div"); head.className = "case-head";
     var idline = document.createElement("div"); idline.className = "case-idline";
@@ -2348,7 +2406,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     if(w){ sign.addEventListener("blur", function(){ var v = sign.textContent.trim(); c.sign = v; saveCase(c.id, { sign:v }); }); pastePlain(sign); }
     renderCaseStamps(slayer, Array.isArray(c.stamps) ? c.stamps : [], c.id);
     zone.addEventListener("click", function(ev2){
-      if(!arming || !held || !canWrite()) return;
+      if(!arming || !held || !w) return;
       ev2.preventDefault(); ev2.stopPropagation();
       var r = zone.getBoundingClientRect();
       var arr = Array.isArray(c.stamps) ? c.stamps.slice() : [];
@@ -2357,7 +2415,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
       c.stamps = arr; disarm(); saveCase(c.id, { stamps:arr }); renderCaseStamps(slayer, arr, c.id);
     }, true);
 
-    if(w){
+    if(canApproveDelete()){                          // حذفٌ مباشر: الرئيس والمالك فقط (طلبات الحذف للبقيّة في المرحلة ٤)
       var del = document.createElement("button"); del.type = "button"; del.className = "case-del"; del.textContent = "حذف الملف نهائياً";
       del.addEventListener("click", function(){ if(window.confirm("حذف هذا الملف نهائياً؟ لا يمكن التراجع.")) deleteCase(c.id); });
       root.appendChild(del);
