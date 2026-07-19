@@ -711,53 +711,41 @@ body[data-role="reader"] .sidetools{ display:none; }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   ألسنة الفهرسة — تبويبات السجلّات كألسنة كتابٍ بارزة من الحرف الأيسر (الفوري).
-   ورقٌ مصفرٌّ بحبيبات، حبرٌ للكتابة، واللسان النشط يتقدّم نحو الدفتر ويغمق.
+   ألسنة الفهرسة — تبويبات السجلّات كألسنةٍ أفقيّةٍ موسّطةٍ فوق الورقة، في أعلى الدفتر.
+   ورقٌ مصفرٌّ بحبيبات، حبرٌ للكتابة، واللسان النشط يرتفع قليلاً ويغمق.
    ═══════════════════════════════════════════════════════════════════════════ */
 .booktabs{
-  position:fixed; top:120px; left:14px; z-index:19;
-  display:flex; flex-direction:column; gap:8px; align-items:flex-start;
+  position:static; z-index:19;
+  display:flex; flex-direction:row; flex-wrap:wrap; justify-content:center; align-items:flex-end;
+  gap:7px; width:min(960px,100%); margin:0 auto 10px;
 }
 body[data-gate] .booktabs, body[data-booting] .booktabs{ display:none; }
 
 .booktab{
-  position:relative; cursor:pointer; text-align:right; isolation:isolate;
+  position:relative; cursor:pointer; isolation:isolate;
   font-family:"Amiri",serif; font-weight:700; font-size:15px; letter-spacing:0;
   color:var(--ink); background-color:var(--paper-shade);
-  background-image: linear-gradient(to left, rgba(120,92,64,.28) 0, rgba(120,92,64,0) 22px);
-  border:1px solid rgba(120,92,64,.5); border-inline-start:none;
-  border-radius:0 3px 3px 0;                 /* الحرف الخارجي (يمين اللسان) مدوّر */
-  padding:10px 16px 10px 22px; min-width:150px;
-  box-shadow: 2px 3px 8px -3px rgba(0,0,0,.5);
-  transition: transform .14s, background-color .14s, color .14s;
-  transform: translateX(-6px);               /* مطويٌّ قليلاً تحت الدفتر */
+  background-image: linear-gradient(to bottom, rgba(120,92,64,.24) 0, rgba(120,92,64,0) 20px);
+  border:1px solid rgba(120,92,64,.5); border-bottom:none;
+  border-radius:4px 4px 0 0;                  /* ألسنةٌ أعلى الورقة، حرفها العلويّ مدوّر */
+  padding:9px 18px 11px;
+  box-shadow: 0 -2px 8px -3px rgba(0,0,0,.4);
+  transition: transform .12s, background-color .14s, color .14s;
 }
 /* بقع التقادم على اللسان — كي يبدو ورقاً لا لوحاً نظيفاً */
 .booktab::before{ content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
   filter:url(#foxing); opacity:.3; mix-blend-mode:multiply; z-index:0; }
-.booktab:hover{ transform: translateX(2px); background-color:var(--paper-mid); }
+.booktab:hover{ transform: translateY(-1px); background-color:var(--paper-mid); }
 .booktab.active{
-  transform: translateX(10px);               /* النشط يبرز نحو القارئ */
+  transform: translateY(-2px);                /* النشط يرتفع قليلاً نحو القارئ */
   background-color:var(--paper); color:var(--ink-press);
-  border-color:rgba(90,66,44,.7); box-shadow: 3px 4px 12px -3px rgba(0,0,0,.6);
-  font-weight:700;
+  border-color:rgba(90,66,44,.7); box-shadow: 0 -3px 12px -3px rgba(0,0,0,.5);
 }
-.booktab.active::after{                       /* شريط حبرٍ أحمر على حرف اللسان النشط */
-  content:""; position:absolute; inset-inline-start:0; top:6px; bottom:6px; width:3px;
+.booktab.active::after{                       /* شريط حبرٍ أحمر على حرف اللسان النشط (سفليّ) */
+  content:""; position:absolute; inset-inline:6px; bottom:0; height:3px;
   background:var(--stamp-red); opacity:.5; mix-blend-mode:multiply; border-radius:2px;
 }
 .booktab .tnum{ font-family:"Old Standard TT",serif; font-size:10px; opacity:.55; margin-inline-start:8px; }
-
-/* على الشاشات الضيّقة: صفٌّ أفقيّ فوق الدفتر بدل ألسنةٍ جانبية تتداخل معه */
-@media (max-width: 1480px){
-  .booktabs{ position:static; flex-direction:row; flex-wrap:wrap; gap:6px;
-    width:min(960px,100%); margin:0 auto 10px; justify-content:center; }
-  .booktab{ transform:none; min-width:0; border-inline-start:1px solid rgba(120,92,64,.5);
-    border-radius:3px 3px 0 0; padding:8px 16px; }
-  .booktab:hover{ transform:none; }
-  .booktab.active{ transform:none; }
-  .booktab.active::after{ inset-inline-start:6px; inset-inline-end:6px; top:auto; bottom:0; width:auto; height:3px; }
-}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    موظف الأسبوع — بطاقة ورقٍ على اليسار تحت التبويبات، بنفس الثيم.
