@@ -16,3 +16,4 @@ stamp-size.sql
 
 # ملف الميثاق المصدر (المحتوى مبذورٌ في charter-seed.sql)
 *.md
+roles.sql

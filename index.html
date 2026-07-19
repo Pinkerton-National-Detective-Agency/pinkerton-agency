@@ -641,7 +641,7 @@ body.arming .leaf::after{ pointer-events:none; }
 .sidetools > *{ position:relative; z-index:1; }
 body[data-gate] .sidetools, body[data-booting] .sidetools{ display:none; }
 body:not([data-role="owner"]):not([data-role="editor"]) .sidetools .side-write{ display:none; }
-body:not([data-role="owner"]) .sidetools #ownerbtn{ display:none; }
+body:not([data-g]) .sidetools #ownerbtn{ display:none; }
 body[data-role="reader"] .sidetools{ display:none; }
 
 .side-title{ font-family:"Amiri",serif; font-weight:700; font-size:14px; color:var(--ink-press);
@@ -1097,7 +1097,7 @@ body:not([data-role="owner"]):not([data-role="editor"]) .charter-navtools{ displ
    ═══════════════════════════════════════════════════════════════════════════ */
 body:not([data-role="owner"]):not([data-role="editor"]) .desk-write{ display:none !important; }
 body:not([data-role="owner"]):not([data-role="editor"]) .rowmarks{ display:none !important; }
-body:not([data-role="owner"]) #ownerbtn{ display:none !important; }
+body:not([data-g]) #ownerbtn{ display:none !important; }
 body[data-booting] .desk, body[data-booting] .pager{ visibility:hidden; }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -1587,7 +1587,7 @@ body[data-panel] .panel-back{ display:flex; }
   </div>
   <div class="side-hint side-write">اختر ختماً ثم انقر الورقة. انقر ختماً مضروباً لتكبيره أو رفعه.</div>
 
-  <button type="button" id="ownerbtn" title="لوحة المالك">الطلبات والصلاحيات</button>
+  <button type="button" id="ownerbtn" title="الطلبات والصلاحيات">الطلبات والصلاحيات</button>
 </aside>
 
 
@@ -1867,9 +1867,35 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   let epoch = 0;
   let lastRow = null, arming = false, held = null;
 
-  const canWrite = () => role === "owner" || role === "editor";
-  const isOwner  = () => role === "owner";
-  function roleLabel(r){ return r==="owner" ? "المالك" : r==="editor" ? "محرّر" : r==="reader" ? "قارئ" : ""; }
+  // سلّم الرتب — المفتاح يُخزَّن، والمستوى للمقارنة الهرميّة (يطابق rank_level في القاعدة).
+  var RANK_DEFS = [
+    { key:"owner",         label:"المالك",             level:1000 },
+    { key:"president",     label:"رئيس البنكرتون",       level:100 },
+    { key:"deputy",        label:"نائب رئيس البنكرتون",   level:90 },
+    { key:"special_agent", label:"عميل خاص",            level:80 },
+    { key:"agent",         label:"عميل",                level:70 },
+    { key:"asst_agent",    label:"مساعد عميل",           level:60 },
+    { key:"special_inv",   label:"محقق خاص",            level:50 },
+    { key:"investigator",  label:"محقق",                level:40 },
+    { key:"asst_inv",      label:"مساعد محقق",          level:30 },
+    { key:"agency_guard",  label:"حارس وكالة",          level:20 },
+    { key:"asst_guard",    label:"حارس مساعد",          level:10 },
+    { key:"reader",        label:"قارئ",                level:5  },
+  ];
+  function rankLevel(r){ if(r === "editor") return 70;   // توافقٌ مع الدور القديم قبل ترحيل roles.sql
+    for(var i=0;i<RANK_DEFS.length;i++) if(RANK_DEFS[i].key===r) return RANK_DEFS[i].level; return 0; }
+  function rankLabel(r){ if(r === "editor") return "محرّر";
+    for(var i=0;i<RANK_DEFS.length;i++) if(RANK_DEFS[i].key===r) return RANK_DEFS[i].label; return ""; }
+  var roleLabel = rankLabel;                                    // اسمٌ قديمٌ يبقى للتوافق
+  const myLevel          = () => rankLevel(role);
+  const canWrite         = () => myLevel() >= 10;               // حارس مساعد فأعلى
+  const isOwner          = () => role === "owner";
+  const canOpenCase      = () => myLevel() >= 10;               // حارس مساعد فأعلى
+  const canApproveCase   = () => myLevel() >= 80;               // عميل خاص فأعلى
+  const canGrant         = () => myLevel() >= 100;              // رئيس فأعلى
+  const canApproveDelete = () => myLevel() >= 100;              // رئيس فأعلى
+  // فئةُ العرض لـ data-role (تُبقي CSS الحاليّ يعمل): مالك/محرّر/قارئ حسب المستوى.
+  function tierOf(r){ if(r === "owner") return "owner"; return rankLevel(r) >= 10 ? "editor" : "reader"; }
   function displayName(u){ var m = (u && u.user_metadata) || {}; return m.full_name || m.name || m.user_name || m.email || ""; }
 
   // ── المصادقة ───────────────────────────────────────────────────────────────
@@ -1910,9 +1936,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   async function enterLedger(){
     document.body.removeAttribute("data-gate");
     document.body.removeAttribute("data-booting");
-    document.body.setAttribute("data-role", role);
-    whoEl.textContent = displayName(session.user) + " · " + roleLabel(role);
-    if(isOwner()) wireOwnerPanel();
+    document.body.setAttribute("data-role", tierOf(role));       // فئةُ العرض (مالك/محرّر/قارئ)
+    if(canGrant()) document.body.setAttribute("data-g", "1"); else document.body.removeAttribute("data-g");
+    whoEl.textContent = displayName(session.user) + " · " + rankLabel(role);
+    if(canGrant()) wireOwnerPanel();
     wireFeatured();
     wireLeaders();
     wireCases();
@@ -3156,27 +3183,37 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
       '<div class="pacts">' + actionsHtml + '</div></div>';
   }
 
+  // الرتب التي أقدر أُسندها = أدنى من رتبتي، وليست «المالك».
+  function assignableRanks(){
+    var lv = myLevel();
+    return RANK_DEFS.filter(function(d){ return d.key !== "owner" && d.level < lv; });
+  }
+  function rankOptions(selKey){
+    return assignableRanks().map(function(d){
+      return '<option value="' + d.key + '"' + (d.key === selKey ? " selected" : "") + '>' + esc(d.label) + '</option>';
+    }).join("");
+  }
   function renderPending(list){
     if(!list.length){ pendingList.innerHTML = '<p class="panel-empty">لا طلبات.</p>'; return; }
     pendingList.innerHTML = list.map(function(p){
       return personRow(p,
-        '<button class="pbtn grant" data-act="grant" data-role="reader" data-id="' + esc(p.user_id) + '">قارئ</button>' +
-        '<button class="pbtn grant" data-act="grant" data-role="editor" data-id="' + esc(p.user_id) + '">محرّر</button>');
+        '<select class="rank-sel" data-id="' + esc(p.user_id) + '">' + rankOptions("asst_guard") + '</select>' +
+        '<button class="pbtn grant" data-act="grant" data-id="' + esc(p.user_id) + '">منح</button>');
     }).join("");
     wirePanelButtons(pendingList);
   }
 
   function renderMembers(list, byId){
     if(!list.length){ memberList.innerHTML = '<p class="panel-empty">لا أعضاء بعد.</p>'; return; }
+    var lv = myLevel();
     memberList.innerHTML = list.map(function(p){
       var g = byId.get(p.user_id);
       var self = (p.user_id === uid);
-      if(g.role === "owner"){
-        return personRow(p, '<span class="pbtn" style="cursor:default">المالك</span>');
+      // لا يُعدَّل مالكٌ، ولا رتبةٌ ≥ رتبتي، ولا نفسي — تُعرَض رتبتهم فقط
+      if(g.role === "owner" || rankLevel(g.role) >= lv || self){
+        return personRow(p, '<span class="pbtn" style="cursor:default">' + esc(rankLabel(g.role)) + '</span>');
       }
-      var sel = '<select data-act="change" data-id="' + esc(p.user_id) + '">' +
-        '<option value="reader"' + (g.role==="reader"?" selected":"") + '>قارئ</option>' +
-        '<option value="editor"' + (g.role==="editor"?" selected":"") + '>محرّر</option></select>';
+      var sel = '<select class="rank-sel" data-act="change" data-id="' + esc(p.user_id) + '">' + rankOptions(g.role) + '</select>';
       var rev = '<button class="pbtn revoke" data-act="revoke" data-id="' + esc(p.user_id) + '">اسحب</button>';
       return personRow(p, sel + rev);
     }).join("");
@@ -3190,7 +3227,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
       }else{
         el.addEventListener("click", function(){
           var act = el.dataset.act;
-          if(act === "grant")  grantRole(el.dataset.id, el.dataset.role);
+          if(act === "grant"){
+            var s = scope.querySelector('.rank-sel[data-id="' + el.dataset.id + '"]');
+            grantRole(el.dataset.id, s ? s.value : "asst_guard");
+          }
           if(act === "revoke") revokeRole(el.dataset.id);
         });
       }
