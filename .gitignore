@@ -20,3 +20,6 @@ roles.sql
 cases-approval.sql
 cases-assign.sql
 cases-delreq.sql
+
+# مجلّد نُسخ التشغيل المحلّيّة (SQL جاهزٌ للصقه في Supabase) — لا يُرفع
+run it/
