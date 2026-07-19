@@ -1018,9 +1018,13 @@ body.arming .case-signzone .case-stamps{ pointer-events:none !important; }
 .charter{ display:none; position:relative; z-index:2; padding:2px 6px 12px; max-width:760px; margin:0 auto;
   font-family:"Amiri",serif; color:var(--ink-press); }
 
-/* الترويسة — الإصدار (قابل للتحرير) + آخر تحديث */
-.charter-topbar{ display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:6px 18px;
-  padding-bottom:9px; margin-bottom:12px; border-bottom:2px solid rgba(61,48,43,.4); font-size:14px; color:var(--ink-press); }
+/* الترويسة — عنوان الميثاق موسّطاً أعلى، ثمّ الإصدار وآخر تحديث */
+.charter-topbar{ padding-bottom:10px; margin-bottom:16px; border-bottom:2px solid rgba(61,48,43,.4); }
+.charter-title{ display:block; width:100%; text-align:center; background:transparent; border:0; outline:none;
+  font-family:"Amiri",serif; font-weight:700; font-size:25px; line-height:1.4; color:var(--ink); padding:2px 0 9px; }
+.charter-title::placeholder{ color:var(--graphite); opacity:.4; }
+.charter-title[readonly]{ cursor:default; }
+.charter-meta{ display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:6px 18px; font-size:14px; color:var(--ink-press); }
 .charter-verwrap{ font-weight:700; }
 .charter-ver{ display:inline-block; min-width:34px; font-family:"Old Standard TT",serif; color:var(--ink); outline:none;
   direction:ltr; border-bottom:1px dashed rgba(61,48,43,.35); padding:0 5px; }
@@ -1029,12 +1033,18 @@ body.arming .case-signzone .case-stamps{ pointer-events:none !important; }
 .charter-upd{ opacity:.8; }
 .charter-upd::before{ content:"◆ "; opacity:.5; }
 
-/* الصفحة — نُكتب فيها مباشرةً؛ حبرٌ على ورق، بلا صندوقٍ ولا إطار */
-.charter-page{ display:block; width:100%; min-height:460px; resize:none; overflow:hidden;
+/* الصفحة — عنوان المادّة موسّطٌ أعلى، ثمّ المتن يُكتب مباشرةً */
+.charter-sheet{ min-height:420px; }
+.charter-heading{ display:block; width:100%; text-align:center; background:transparent; border:0; outline:none;
+  font-family:"Amiri",serif; font-weight:700; font-size:21px; color:var(--ink); padding:6px 0 12px; margin-bottom:12px;
+  border-bottom:1px solid rgba(61,48,43,.26); }
+.charter-heading::placeholder{ color:var(--graphite); opacity:.4; font-weight:400; }
+.charter-heading[readonly]{ cursor:default; }
+.charter-body{ display:block; width:100%; min-height:340px; resize:none; overflow:hidden;
   background:transparent; border:0; outline:none; color:var(--ink-press);
   font-family:"Amiri",serif; font-size:18px; line-height:2.05; padding:2px 2px 8px; }
-.charter-page::placeholder{ color:var(--graphite); opacity:.4; }
-.charter-page[readonly]{ cursor:default; }
+.charter-body::placeholder{ color:var(--graphite); opacity:.4; }
+.charter-body[readonly]{ cursor:default; }
 
 /* شريط التصفّح — نفس روح مصفّح الملازم + أدوات الصفحات */
 .charter-nav{ display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:8px 16px;
@@ -1429,10 +1439,16 @@ body[data-panel] .panel-back{ display:flex; }
   <!-- كتيب القوانين — صفحاتٌ تُكتَب مباشرةً؛ تصفّحٌ وإضافةُ صفحات. تبدأ فاضية. -->
   <section class="charter" id="charter" aria-label="كتيب القوانين">
     <div class="charter-topbar">
-      <span class="charter-verwrap">الإصدار <span class="charter-ver" id="charterVer" data-ghost="١.٠"></span></span>
-      <span class="charter-upd" id="charterUpd"></span>
+      <input class="charter-title" id="charterTitle" dir="rtl" spellcheck="false" placeholder="عنوان الميثاق" readonly>
+      <div class="charter-meta">
+        <span class="charter-verwrap">الإصدار <span class="charter-ver" id="charterVer" data-ghost="١.٠"></span></span>
+        <span class="charter-upd" id="charterUpd"></span>
+      </div>
     </div>
-    <textarea class="charter-page" id="charterPage" dir="rtl" spellcheck="false" placeholder="اكتب القوانين هنا مباشرةً…"></textarea>
+    <div class="charter-sheet">
+      <input class="charter-heading" id="charterHeading" dir="rtl" spellcheck="false" placeholder="عنوان المادّة" readonly>
+      <textarea class="charter-body" id="charterBody" dir="rtl" spellcheck="false" placeholder="نصّ المادّة…"></textarea>
+    </div>
     <div class="charter-nav">
       <button type="button" id="charterPrev">الصفحة السابقة ›</button>
       <span class="charter-folio" id="charterFolio"></span>
@@ -1678,7 +1694,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
         leadersEl = $("leaders"), leadFileEl = $("leadFile"),
         casesEl = $("cases"), casesListEl = $("casesList"), caseDetailEl = $("caseDetail"),
         caseFileEl = $("caseFile"), caseAddEl = $("caseAdd"),
-        charterEl = $("charter"), charterPageEl = $("charterPage"), charterVerEl = $("charterVer"),
+        charterEl = $("charter"), charterTitleEl = $("charterTitle"), charterHeadingEl = $("charterHeading"),
+        charterBodyEl = $("charterBody"), charterVerEl = $("charterVer"),
         charterUpdEl = $("charterUpd"), charterFolioEl = $("charterFolio"),
         charterPrevEl = $("charterPrev"), charterNextEl = $("charterNext"),
         charterAddEl = $("charterAddPage"), charterDelEl = $("charterDelPage");
@@ -2372,10 +2389,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     }catch(e){}
   }
 
-  // ── كتيب القوانين — صفحاتٌ تُكتَب مباشرةً (بلا وضع تحرير) ──────────────────────
-  // القوانين تُكتب في الصفحة مباشرةً وتُحفظ تلقائياً. صفحاتٌ نصّية (pages jsonb) +
-  // إصدارٌ + آخر تحديث. «التالي/السابق» تتصفّح، و«＋ صفحة جديدة» تضيف.
-  var charterPages = [""], charterPage = 0, charterVer = "", charterUpd = null, charterSaveT = null;
+  // ── كتيب القوانين — مادّةٌ لكلّ صفحة: عنوانٌ موسّط + متن، تُحرَّر مباشرةً ────────
+  // كلّ صفحةٍ نصٌّ «العنوان\nالمتن»؛ + عنوانُ الميثاق (title) موسّطٌ فوق + إصدارٌ + آخر تحديث.
+  var charterPages = ["\n"], charterPage = 0, charterVer = "", charterUpd = null, charterTitle = "", charterSaveT = null;
   function fmtCharterDate(ts){
     if(!ts) return "";
     var d = new Date(ts); if(isNaN(d.getTime())) return "";
@@ -2385,32 +2401,38 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
       return s;
     }catch(e){ return arNum(d.getDate()) + "/" + arNum(d.getMonth()+1) + "/" + arNum(d.getFullYear()); }
   }
-  function charterEditingNow(){ var a = document.activeElement; return a === charterPageEl || a === charterVerEl; }
-  function charterAutoGrow(){ if(!charterPageEl) return; charterPageEl.style.height = "auto"; charterPageEl.style.height = Math.max(460, charterPageEl.scrollHeight) + "px"; }
-  // force=true: نُحمّل قيمة الصفحة حتى لو كان المربّع مركّزاً — للتنقّل المحلّي (نحن مَن غيّر الصفحة).
-  // بلا force: نتخطّى التحميل عند التركيز كي لا يُنتزَع مؤشّر الكتابة أثناء تحديثٍ فوريّ بعيد.
+  // كلّ صفحة = «العنوان» ثمّ سطرٌ جديد ثمّ «المتن».
+  function charterSplit(s){ s = String(s == null ? "" : s); var i = s.indexOf("\n"); return i < 0 ? { h:s, b:"" } : { h:s.slice(0, i), b:s.slice(i + 1) }; }
+  function charterJoin(h, b){ return (h || "") + "\n" + (b || ""); }
+  function charterEditingNow(){ var a = document.activeElement; return a === charterBodyEl || a === charterHeadingEl || a === charterTitleEl || a === charterVerEl; }
+  function charterAutoGrow(){ if(!charterBodyEl) return; charterBodyEl.style.height = "auto"; charterBodyEl.style.height = Math.max(340, charterBodyEl.scrollHeight) + "px"; }
+  // force=true: نُحمّل قيم الصفحة حتى لو كان الحقل مركّزاً — للتنقّل المحلّي (نحن مَن غيّر الصفحة).
   function renderCharter(force){
-    if(!charterPageEl) return;
+    if(!charterBodyEl) return;
     var w = canWrite();
     if(charterPage < 0) charterPage = 0;
     if(charterPage > charterPages.length - 1) charterPage = charterPages.length - 1;
+    if(charterTitleEl && charterTitleEl !== document.activeElement) charterTitleEl.value = charterTitle || "";
     if(charterVerEl && charterVerEl !== document.activeElement) charterVerEl.textContent = charterVer || "";
     if(charterUpdEl) charterUpdEl.textContent = "آخر تحديث: " + (fmtCharterDate(charterUpd) || "—");
-    if(force || charterPageEl !== document.activeElement){ charterPageEl.value = charterPages[charterPage] || ""; charterAutoGrow(); }
-    charterPageEl.readOnly = !w;
+    var pg = charterSplit(charterPages[charterPage]);
+    if(force || charterHeadingEl !== document.activeElement) charterHeadingEl.value = pg.h;
+    if(force || charterBodyEl !== document.activeElement){ charterBodyEl.value = pg.b; charterAutoGrow(); }
+    charterTitleEl.readOnly = !w; charterHeadingEl.readOnly = !w; charterBodyEl.readOnly = !w;
     if(charterVerEl) charterVerEl.setAttribute("contenteditable", w ? "plaintext-only" : "false");
     if(charterFolioEl) charterFolioEl.textContent = "صفحة " + arNum(charterPage + 1) + " من " + arNum(charterPages.length);
     if(charterPrevEl) charterPrevEl.disabled = (charterPage <= 0);
     if(charterNextEl) charterNextEl.disabled = (charterPage >= charterPages.length - 1);
   }
-  function syncCharterPage(){ if(charterPageEl) charterPages[charterPage] = charterPageEl.value; }
+  function syncCharterPage(){ if(charterHeadingEl && charterBodyEl) charterPages[charterPage] = charterJoin(charterHeadingEl.value, charterBodyEl.value); }
   async function loadCharter(){
     try{
       var res = await sb.from("charter").select("*").eq("id", 1).maybeSingle();
       if(!res.error && res.data){
+        charterTitle = res.data.title || "";
         charterVer = res.data.version || "";
         var p = res.data.pages;
-        charterPages = (Array.isArray(p) && p.length) ? p.slice() : [""];
+        charterPages = (Array.isArray(p) && p.length) ? p.slice() : ["\n"];
         charterUpd = res.data.updated_at;
       }
       if(!charterEditingNow()) renderCharter();
@@ -2418,7 +2440,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   }
   async function saveCharter(){
     if(!canWrite()) return;
-    var res = await sb.from("charter").update({ version: charterVer, pages: charterPages }).eq("id", 1).select().single();
+    var res = await sb.from("charter").update({ title: charterTitle, version: charterVer, pages: charterPages }).eq("id", 1).select().single();
     if(res.error){ toast("تعذّر حفظ القوانين: " + res.error.message, true); return; }
     charterUpd = res.data.updated_at;
     if(charterUpdEl) charterUpdEl.textContent = "آخر تحديث: " + (fmtCharterDate(charterUpd) || "—");
@@ -2427,30 +2449,33 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   function charterGo(delta){
     syncCharterPage();
     var n = charterPage + delta; if(n < 0 || n > charterPages.length - 1) return;
-    charterPage = n; renderCharter(true); if(canWrite() && charterPageEl) charterPageEl.focus();
+    charterPage = n; renderCharter(true); if(canWrite() && charterBodyEl) charterBodyEl.focus();
   }
   function charterAddPage(){
     if(!canWrite()) return;
-    syncCharterPage(); charterPages.push(""); charterPage = charterPages.length - 1;
-    renderCharter(true); if(charterSaveT){ clearTimeout(charterSaveT); charterSaveT = null; } saveCharter(); charterPageEl.focus();
+    syncCharterPage(); charterPages.push("\n"); charterPage = charterPages.length - 1;
+    renderCharter(true); if(charterSaveT){ clearTimeout(charterSaveT); charterSaveT = null; } saveCharter(); charterHeadingEl.focus();
   }
   function charterDelPage(){
     if(!canWrite()) return;
     syncCharterPage();
-    if(charterSaveT){ clearTimeout(charterSaveT); charterSaveT = null; }   // لا حفظٌ مؤجّلٌ يكتب حالةً قديمة
-    if(charterPages.length <= 1){ charterPages = [""]; charterPage = 0; renderCharter(true); saveCharter(); return; }
-    if((charterPages[charterPage] || "").trim() && !window.confirm("حذف هذه الصفحة وما فيها نهائياً؟")) return;
+    if(charterSaveT){ clearTimeout(charterSaveT); charterSaveT = null; }
+    if(charterPages.length <= 1){ charterPages = ["\n"]; charterPage = 0; renderCharter(true); saveCharter(); return; }
+    if((charterPages[charterPage] || "").replace(/\n/g, "").trim() && !window.confirm("حذف هذه الصفحة وما فيها نهائياً؟")) return;
     charterPages.splice(charterPage, 1);
     if(charterPage > charterPages.length - 1) charterPage = charterPages.length - 1;
     renderCharter(true); saveCharter();
   }
   var charterWired = false;
   function wireCharter(){
-    if(!charterPageEl) return;
+    if(!charterBodyEl) return;
     loadCharter();
     if(charterWired) return; charterWired = true;
-    charterPageEl.addEventListener("input", function(){ if(!canWrite()) return; charterPages[charterPage] = charterPageEl.value; charterAutoGrow(); scheduleCharterSave(); });
-    charterPageEl.addEventListener("blur", function(){ if(!canWrite()) return; syncCharterPage(); if(charterSaveT){ clearTimeout(charterSaveT); charterSaveT = null; } saveCharter(); });
+    charterHeadingEl.addEventListener("input", function(){ if(!canWrite()) return; syncCharterPage(); scheduleCharterSave(); });
+    charterHeadingEl.addEventListener("blur",  function(){ if(!canWrite()) return; syncCharterPage(); if(charterSaveT){ clearTimeout(charterSaveT); charterSaveT = null; } saveCharter(); });
+    charterBodyEl.addEventListener("input", function(){ if(!canWrite()) return; syncCharterPage(); charterAutoGrow(); scheduleCharterSave(); });
+    charterBodyEl.addEventListener("blur",  function(){ if(!canWrite()) return; syncCharterPage(); if(charterSaveT){ clearTimeout(charterSaveT); charterSaveT = null; } saveCharter(); });
+    if(charterTitleEl) charterTitleEl.addEventListener("blur", function(){ if(!canWrite()) return; charterTitle = charterTitleEl.value.replace(/\s+/g, " ").trim(); saveCharter(); });
     if(charterVerEl){
       charterVerEl.addEventListener("blur", function(){ if(!canWrite()) return; charterVer = charterVerEl.textContent.replace(/\s+/g, " ").trim(); saveCharter(); });
       charterVerEl.addEventListener("paste", function(ev){ ev.preventDefault(); var t = (ev.clipboardData || window.clipboardData).getData("text").replace(/\s+/g, " "); document.execCommand("insertText", false, t); });
