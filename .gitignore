@@ -1,6 +1,7 @@
 banned.sql
 cases.sql
 charter.sql
+charter-seed.sql
 featured.sql
 featured-stars.sql
 laws.sql
@@ -12,3 +13,6 @@ schema.sql
 archer-sig.png
 seed.sql
 stamp-size.sql
+
+# ملف الميثاق المصدر (المحتوى مبذورٌ في charter-seed.sql)
+*.md
