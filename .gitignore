@@ -9,8 +9,9 @@ leaders.sql
 realtime.sql
 schema.sql
 
-# صورة التوقيع الأصليّة — مدمجةٌ base64 في index.html، فلا داعي لرفع الخام
+# صور المصدر الأصليّة — مدمجةٌ base64 في index.html، فلا داعي لرفع الخام
 archer-sig.png
+foldr/
 seed.sql
 stamp-size.sql
 
@@ -20,6 +21,7 @@ roles.sql
 cases-approval.sql
 cases-assign.sql
 cases-delreq.sql
+public-tabs.sql
 
 # مجلّد نُسخ التشغيل المحلّيّة (SQL جاهزٌ للصقه في Supabase) — لا يُرفع
 run it/

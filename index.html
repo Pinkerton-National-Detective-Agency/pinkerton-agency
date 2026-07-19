@@ -603,6 +603,17 @@ body.arming .leaf::after{ pointer-events:none; }
 .desk button:hover:not(:disabled){ background:rgba(227,207,180,.20); border-color:rgba(227,207,180,.5); }
 .desk button:disabled{ opacity:.3; cursor:default; }
 .desk button.armed{ background:rgba(163,32,31,.5); border-color:rgba(200,80,70,.8); color:#F0DCBE; }
+
+/* زرّ الربط بديسكورد — في الشريط العلويّ، يظهر للغريب ويُخفى عن العضو (بالـ JS) */
+.desk .toplogin{
+  display:inline-flex; align-items:center; gap:8px; cursor:pointer;
+  font-family:"Amiri",serif; font-size:14px; font-weight:700; letter-spacing:0;
+  color:#F0DCBE; background:rgba(88,101,242,.18);
+  border:1px solid rgba(88,101,242,.6); border-radius:3px; padding:4px 12px 4px 7px;
+}
+.desk .toplogin img{ width:26px; height:26px; border-radius:6px; display:block; }
+.desk .toplogin:hover:not(:disabled){ background:rgba(88,101,242,.34); border-color:rgba(124,136,255,.95); }
+.desk .toplogin:active{ transform:translateY(1px); }
 .desk .count{ font-size:12px; color:var(--paper-shadow); opacity:.75; margin-inline-start:auto; white-space:nowrap; }
 .desk .hit{ font-size:12px; color:#C8AC8B; }
 
@@ -643,6 +654,9 @@ body[data-gate] .sidetools, body[data-booting] .sidetools{ display:none; }
 body:not([data-role="owner"]):not([data-role="editor"]) .sidetools .side-write{ display:none; }
 body:not([data-g]) .sidetools #ownerbtn{ display:none; }
 body[data-role="reader"] .sidetools{ display:none; }
+/* الزائر (غريبٌ أو طلبٌ قيد النظر): لا أدواتِ مكتب، ولا بطاقةَ موظف الأسبوع */
+body[data-role="visitor"] .sidetools{ display:none !important; }
+body[data-role="visitor"] .featured{ display:none !important; }
 
 .side-title{ font-family:"Amiri",serif; font-weight:700; font-size:14px; color:var(--ink-press);
   text-align:center; border-bottom:1px solid rgba(61,48,43,.3); padding-bottom:6px; margin-bottom:2px; }
@@ -1534,6 +1548,10 @@ body[data-panel] .panel-back{ display:flex; }
   <button class="desk-write" type="button" id="inkreset">أعده عادياً</button>
 
   <div class="desk-sep"></div>
+  <button type="button" id="topLogin" class="toplogin" title="ادخل بحساب ديسكورد">
+    <img src="data:image/png;base64,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" alt="" width="26" height="26">
+    <span>اربط حسابك بديسكورد</span>
+  </button>
   <span class="who" id="whoami"></span>
   <button type="button" id="logout" class="pbtn" style="padding:3px 10px">خروج</button>
 
@@ -1707,7 +1725,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
         inkResetEl = $("inkreset"), armEl = $("armstamp"),
         stampTextEl = $("stamptext"), stampColourEl = $("stampcolour"),
         szUpEl = $("szup"), szDownEl = $("szdown"), szShowEl = $("szshow"),
-        gateEl = $("gate"), loginEl = $("login"), logoutEl = $("logout"),
+        gateEl = $("gate"), loginEl = $("login"), logoutEl = $("logout"), loginTopEl = $("topLogin"),
         whoEl = $("whoami"), gateWhoEl = $("gatewho"), gateMsgEl = $("gatemsg"),
         ownerBtn = $("ownerbtn"), panelBack = $("panelback"), panelClose = $("panelclose"),
         pendingList = $("pendingList"), memberList = $("memberList"), toastEl = $("toast"),
@@ -1843,7 +1861,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   }
   function buildTabs(){
     bookTabsEl.textContent = "";
-    BOARD_ORDER.forEach(function(key){
+    visibleBoards().forEach(function(key){
       var b = BOARDS[key];
       var el = document.createElement("button");
       el.type = "button";
@@ -1859,7 +1877,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     else document.body.removeAttribute("data-view");
   }
   async function switchBoard(key){
-    if(!BOARDS[key] || key === board.key) return;
+    if(!BOARDS[key] || key === board.key || !isVisibleBoard(key)) return;
     board = BOARDS[key];
     epoch++;                       // يُبطل أيّ جلبٍ/إدراجٍ من السجلّ السابق ما زال طائراً
     page = 0; selectedStampId = null; lastMatchId = 0;
@@ -1939,11 +1957,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     let s = null;
     try{ const r = await sb.auth.getSession(); s = r.data.session; }catch(e){}
     session = s;
-    if(!session){ showGate("stranger"); return; }
-    uid = session.user.id;
-    role = await fetchRole();
-    if(!role){ showGate("pending"); return; }
-    await enterLedger();
+    if(session){ uid = session.user.id; role = await fetchRole(); }
+    else { uid = null; role = null; }
+    await enterLedger();               // بوّابةٌ مرنة: يدخل الجميع؛ الوضعُ حسب الجلسة والرتبة
   }
   async function fetchRole(){
     try{
@@ -1968,21 +1984,52 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     }
   }
 
+  // ما يراه الزائر (غريبٌ أو صاحبُ طلبٍ قيد النظر): ٣ لوحاتٍ عامّة فقط
+  var PUBLIC_BOARDS = ["leadership", "laws", "banned"];
+  function visibleBoards(){ return role ? BOARD_ORDER : PUBLIC_BOARDS; }
+  function isVisibleBoard(key){ return visibleBoards().indexOf(key) >= 0; }
+
+  // الشريط العلويّ: زرُّ الربط للغريب، والاسم/الخروج للعضو أو لصاحب الطلب قيد النظر
+  function updateTopbar(){
+    if(role){
+      if(loginTopEl) loginTopEl.style.display = "none";
+      whoEl.style.display = ""; logoutEl.style.display = "";
+      whoEl.textContent = displayName(session.user) + " · " + rankLabel(role);
+    }else if(session){                    // مسجَّلٌ بلا رتبة — طلبُه ينتظر إذن المالك
+      if(loginTopEl) loginTopEl.style.display = "none";
+      whoEl.style.display = ""; logoutEl.style.display = "";
+      whoEl.textContent = displayName(session.user) + " · طلبُك قيد النظر";
+    }else{                                // غريبٌ — يعرض زرَّ الربط بديسكورد
+      if(loginTopEl) loginTopEl.style.display = "";
+      whoEl.style.display = "none"; logoutEl.style.display = "none";
+    }
+  }
+
   async function enterLedger(){
     document.body.removeAttribute("data-gate");
     document.body.removeAttribute("data-booting");
-    document.body.setAttribute("data-role", tierOf(role));       // فئةُ العرض (مالك/محرّر/قارئ)
-    if(canGrant()) document.body.setAttribute("data-g", "1"); else document.body.removeAttribute("data-g");
-    whoEl.textContent = displayName(session.user) + " · " + rankLabel(role);
-    if(canGrant()) wireOwnerPanel();
-    wireFeatured();
-    wireLeaders();
-    wireCases();
-    wireCharter();
-    buildTabs(); buildThead(); applyView();
-    await render();
+    var member = !!role;
+    document.body.setAttribute("data-role", member ? tierOf(role) : "visitor");   // مالك/محرّر/قارئ أو زائر
+    if(member && canGrant()) document.body.setAttribute("data-g", "1"); else document.body.removeAttribute("data-g");
+    updateTopbar();
+    if(member && canGrant()) wireOwnerPanel();
+    if(member) wireFeatured();            // موظف الأسبوع — للأعضاء فقط
+    wireLeaders(); wireCharter();          // لوحتان عامّتان (الزائر يقرؤهما)
+    if(member) wireCases();                // القضايا — للأعضاء فقط (الزائر لا يقرؤها)
+    // اللوحة الافتراضيّة: عضوٌ → سجل العملاء؛ زائرٌ → القيادة إن كانت الحاليّةُ غيرَ مرئيّةٍ له
+    if(!member && !isVisibleBoard(board.key)) board = BOARDS.leadership;
+    buildTabs(); applyView();
+    if(board.kind){                        // لوحةٌ خاصّة (قيادة/ملفّات/ميثاق) — لا جدول
+      if(liveChannel){ sb.removeChannel(liveChannel); liveChannel = null; }
+      if(board.kind === "leaders") loadLeaders();
+      else if(board.kind === "files") loadCases();
+      else if(board.kind === "charter") loadCharter();
+    }else{                                 // لوحةٌ جدوليّة (سجل العملاء/القائمة السوداء)
+      buildThead();
+      await render();
+      subscribeLive();
+    }
     if(document.fonts && document.fonts.ready) document.fonts.ready.then(() => paint());
-    subscribeLive();
   }
 
   // ── موظف الأسبوع ───────────────────────────────────────────────────────────
@@ -2707,8 +2754,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   }
   var liveChannel = null;
   function subscribeLive(){
+    if(liveChannel){ sb.removeChannel(liveChannel); liveChannel = null; }
+    if(!role) return;    // غيرُ العضو لا يشترك في البثّ الحيّ — حمولةُ البثّ تحمل الصفَّ كاملاً (بما فيه note)
     try{
-      if(liveChannel){ sb.removeChannel(liveChannel); liveChannel = null; }
       liveChannel = sb.channel("live-" + board.key)
         .on("postgres_changes", { event:"*", schema:"public", table:board.table }, scheduleLive)
         .on("postgres_changes", { event:"*", schema:"public", table:board.stamps }, scheduleLive)
@@ -2718,11 +2766,13 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   // لو أُجِّل تحديثٌ لأننا كنّا نكتب، نفّذه فور الفراغ
   document.addEventListener("visibilitychange", function(){ if(!document.hidden && liveDirty) refreshLive(); });
 
-  loginEl.onclick = async () => {
+  async function startLogin(){
     try{
       await sb.auth.signInWithOAuth({ provider:"discord", options:{ redirectTo: location.href.split("#")[0] } });
     }catch(e){ toast("تعذّر بدء الدخول", true); }
-  };
+  }
+  if(loginEl)    loginEl.onclick    = startLogin;     // زرّ البوّابة القديم (غير مستعمل الآن)
+  if(loginTopEl) loginTopEl.onclick = startLogin;     // زرّ الربط العلويّ للغريب
   async function doLogout(){ try{ await sb.auth.signOut(); }catch(e){} location.reload(); }
   logoutEl.onclick = doLogout;
 
@@ -2737,10 +2787,16 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
 
   // e = جيلُ البدء. بعد كلّ await نتحقّق أنّه لم يتبدّل السجلّ، وإلا نُلغي دون أن نمسّ
   // الحالة العامّة (total/pageRecs/pageStamps) — فلا تُرسَم بيانات سجلٍّ تحت ترويسة آخر.
+  // أعمدةُ الجلب: العضو (له رتبة) يجلب كلَّ الأعمدة؛ غيرُ العضو (زائرٌ أو طلبٌ قيد النظر)
+  // الأعمدةَ الظاهرة فقط — فلا يُعرَض له note الداخليّة ولا updated_by (يوافق مِنحةَ anon).
+  function selCols(){
+    if(role) return "*";
+    return "id,struck,ink," + board.cols.map(function(c){ return c.col; }).join(",");
+  }
   async function fetchPage(e){
     const from = page*PER_LEAF, to = from + PER_LEAF - 1;
     const res = await sb.from(board.table)
-      .select("*", { count:"exact" }).order("id", { ascending:true }).range(from, to);
+      .select(selCols(), { count:"exact" }).order("id", { ascending:true }).range(from, to);
     if(e !== epoch) return;                        // بُدِّل السجلّ أثناء الجلب
     if(res.error){ toast("تعذّر جلب السجل: " + res.error.message, true); pageRecs = []; total = 0; pageStamps = []; return; }
     total = res.count || 0;
@@ -3298,7 +3354,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     }
     var matchId = res.data[0].id;
     lastMatchId = matchId;
-    var cres = await sb.from(board.table).select("*", { count:"exact", head:true }).lt("id", matchId);
+    var cres = await sb.from(board.table).select("id", { count:"exact", head:true }).lt("id", matchId);
     var before = cres.count || 0;
     page = Math.floor(before / PER_LEAF);
     await render();
