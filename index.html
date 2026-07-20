@@ -898,11 +898,13 @@ body[data-view="map"] .sidetools{ display:none !important; }
 .leaflet-popup-tip{ background:#efe3c6; }
 .map-pop b{ font-size:15px; color:#3d302b; } .map-pop p{ margin:4px 0 0; font-size:13px; color:#5b4a3f; }
 /* تبويبُ الخريطة وحده يتّسع ليملأ الشاشة — مستقلٌّ، لا يمسّ عرضَ بقيّة التبويبات (٩٦٠px) */
-body[data-view="map"] .leaf{ width:min(1680px, 96vw); min-width:0; padding:8px; }
+body[data-view="map"]{ overflow-x:hidden; }                      /* لا شريطَ تمريرٍ أفقيّ من ملء العرض */
+body[data-view="map"] .leaf{ width:100vw; max-width:100vw; min-width:0;
+  margin-left:calc(50% - 50vw); margin-right:calc(50% - 50vw); padding:0; box-shadow:none; }
 body[data-view="map"] .masthead{ display:none; }                 /* لا شريطَ ورقٍ فوق الخريطة */
 body[data-view="map"] .mapboard{ width:100%; margin:0; }
-body[data-view="map"] #lmap{ height:86vh; background:#241d18; border-color:#140d08; }
-body[data-view="map"] .leaflet-container{ background:#241d18; }   /* إطارٌ داكنٌ بدل الورق البيج الفارغ */
+body[data-view="map"] #lmap{ height:88vh; border:0; border-radius:0; background:#241d18; }
+body[data-view="map"] .leaflet-container{ background:#241d18; }   /* لا يظهر إلا خلفَ الخريطة إن وُجد */
 
 .leaders-head{ font-family:"Amiri",serif; font-weight:700; font-size:20px; color:var(--ink-press);
   text-align:center; letter-spacing:0; opacity:.85; margin:2px 0 20px;
@@ -2057,28 +2059,37 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
       });
     });
   }
-  var lmapFitted = false;
+  var lmapFitted = false, MAP_B = [[0, 0], [-144, 176]];
+  // تغطية: نكبّر حتى تملأ خريطةُ RDR2 الإطارَ كاملاً (عرضاً وارتفاعاً) — بلا أيّ فراغٍ داكن.
+  function coverMap(){
+    if(!lmap) return;
+    var b = L.latLngBounds(MAP_B), size = lmap.getSize();
+    var nw = lmap.project(b.getNorthWest(), 0), se = lmap.project(b.getSouthEast(), 0);
+    var bw = Math.abs(se.x - nw.x), bh = Math.abs(se.y - nw.y);       // حجمُ الخريطة (بكسل عند زوم ٠)
+    var scale = Math.max(size.x / bw, size.y / bh);                    // تغطية: أكبرُ نسبةٍ تملأ الإطار
+    var z = Math.log(scale) / Math.LN2 + 0.001;                       // زوم = log2(scale) + هامشٌ ضدّ الشعرة
+    lmap.setMinZoom(z);                            // لا تصغيرَ يكشف الفراغ
+    lmap.setMaxBounds(b);                          // لا تنقّلَ خارج حدود الخريطة (لا حواشيَ داكنة)
+    if(lmap.getZoom() < z) lmap.setZoom(z);
+  }
   function loadMapBoard(){
-    if(typeof L === "undefined") return;            // Leaflet لم يُحمَّل بعد
+    if(typeof L === "undefined") return;          // Leaflet لم يُحمَّل بعد
     if(!lmapInited){
       lmapInited = true;
       lmap = L.map("lmap", { preferCanvas:true, attributionControl:false,
-        minZoom:2, maxZoom:7, crs:L.CRS.Simple, zoomControl:true }).setView([-70, 111.75], 3);
+        maxZoom:7, zoomSnap:0, crs:L.CRS.Simple, zoomControl:true }).setView([-70, 111.75], 3);
       L.tileLayer("https://s.rsg.sc/sc/images/games/RDR2/map/game/{z}/{x}/{y}.jpg",
-        { noWrap:true, bounds:[[0,0],[-144,176]] }).addTo(lmap);
+        { noWrap:true, bounds:MAP_B }).addTo(lmap);
       buildMapMarkers();
       buildMapLegend();
+      lmap.on("resize", coverMap);                 // نُعيد التغطيةَ عند تغيّر مقاس النافذة
     }
-    // اللوحة كانت مخفيّةً؛ Leaflet يحتاج إعادةَ قياسٍ بعد ظهورها، ثمّ نملأ الإطارَ باليابسة.
+    // اللوحة كانت مخفيّةً؛ Leaflet يحتاج إعادةَ قياسٍ بعد ظهورها، ثمّ نغطّي الإطارَ باليابسة.
     setTimeout(function(){
       if(!lmap) return;
       lmap.invalidateSize();
-      if(!lmapFitted){
-        lmapFitted = true;
-        lmap.fitBounds([[0, 0], [-144, 176]]);          // تملأ الخريطةُ الإطارَ (لا ورقٌ فارغٌ حولها)
-        lmap.setMinZoom(lmap.getZoom());                // لا تصغيرَ أبعدَ من ملء الإطار
-        lmap.setMaxBounds(lmap.getBounds().pad(0.12));  // حصرُ التنقّل على الخريطة + هامشٌ يسير
-      }
+      coverMap();
+      if(!lmapFitted){ lmapFitted = true; lmap.setView(L.latLngBounds(MAP_B).getCenter(), lmap.getMinZoom()); }
     }, 80);
   }
 
