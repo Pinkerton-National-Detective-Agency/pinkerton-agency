@@ -901,10 +901,13 @@ body[data-view="map"] .sidetools{ display:none !important; }
 body[data-view="map"]{ overflow:hidden; }                        /* لا تمريرَ — الخريطةُ مثبّتةٌ ملءَ ما تحت التبويبات */
 body[data-view="map"] .masthead{ display:none; }                 /* لا شريطَ ورقٍ فوق الخريطة */
 body[data-view="map"] .desk{ display:none !important; }          /* لا شريطَ أدوات الدفتر أسفلَ الخريطة */
+body[data-view="map"] .graphite{ display:none !important; }      /* لا نصَّ كعب الدفتر (MS 2247) فوق الخريطة */
 body[data-view="map"] .leaf{ position:fixed; inset:96px 0 0 0; z-index:5;
-  width:auto; max-width:none; min-width:0; margin:0; padding:0; box-shadow:none; }
+  width:auto; max-width:none; min-width:0; margin:0;
+  padding:0 !important; padding-inline:0 !important; padding-block:0 !important;
+  transform:none !important; box-shadow:none; }   /* إلغاءُ ميل صفحة الكتاب — يزيح الخريطة ويُظهر الورق */
 /* اللوحةُ تملأ الورقةَ، وfitBounds يُظهر الخريطةَ كاملةً موسّطةً؛ والجانبان إطارٌ داكن (لا فراغٌ بيج) */
-body[data-view="map"] .mapboard{ position:absolute; inset:0; margin:0; background:#b59e6c; }
+body[data-view="map"] .mapboard{ position:absolute; inset:0; width:auto; max-width:none; margin:0; background:#b59e6c; }
 body[data-view="map"] .map-wrap{ height:100%; }
 body[data-view="map"] #lmap{ height:100%; width:100%; border:0; border-radius:0; background:#b59e6c; }
 body[data-view="map"] .leaflet-container{ background:#b59e6c; }
