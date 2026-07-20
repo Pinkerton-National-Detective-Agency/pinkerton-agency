@@ -2062,22 +2062,29 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
       });
     });
   }
-  var MAP_B = [[0, 0], [-144, 176]];
-  // مطابقةٌ لـ rdr2map.com: تقريبٌ افتراضيٌّ ٣ (الخريطةُ تملأ الشاشة)، تصغيرٌ حتى ١
-  // وتكبيرٌ حتى ٧، تنقّلٌ حرٌّ بلا حدود، وخلفيّةٌ ورقيّةٌ تُطابق الخريطةَ فيبدو الهامشُ امتداداً.
+  var lmapFitted = false, MAP_B = [[0, 0], [-144, 176]];
+  // عند التصغير: الخريطةُ كاملةً تملأ المربّع (fitBounds)؛ ولا تصغيرَ أبعدَ منها (minZoom=fit).
+  // عند التكبير: التنقّلُ محصورٌ على حدود الخريطة (maxBounds) فلا يخرج لفراغ. الخلفيّةُ ورقيّةٌ فتندمج الحواشي.
   function loadMapBoard(){
     if(typeof L === "undefined") return;          // Leaflet لم يُحمَّل بعد
     if(!lmapInited){
       lmapInited = true;
       lmap = L.map("lmap", { preferCanvas:true, attributionControl:false,
-        minZoom:1, maxZoom:7, zoomSnap:0, crs:L.CRS.Simple, zoomControl:true }).setView([-70, 111.75], 3);
+        maxZoom:7, zoomSnap:0, crs:L.CRS.Simple, zoomControl:true }).setView([-70, 111.75], 3);
       L.tileLayer("https://s.rsg.sc/sc/images/games/RDR2/map/game/{z}/{x}/{y}.jpg",
         { noWrap:true, bounds:MAP_B }).addTo(lmap);
       buildMapMarkers();
       buildMapLegend();
+      lmap.on("resize", function(){ if(lmap){ lmap.setMaxBounds(L.latLngBounds(MAP_B).pad(0.02)); lmap.setMinZoom(lmap.getBoundsZoom(L.latLngBounds(MAP_B))); } });
     }
-    // اللوحة كانت مخفيّة؛ Leaflet يحتاج إعادةَ قياسٍ بعد ظهورها.
-    setTimeout(function(){ if(lmap) lmap.invalidateSize(); }, 80);
+    // اللوحة كانت مخفيّة؛ Leaflet يحتاج إعادةَ قياسٍ بعد ظهورها، ثمّ نُظهر الخريطةَ كاملةً في المربّع.
+    setTimeout(function(){
+      if(!lmap) return;
+      lmap.invalidateSize();
+      lmap.setMaxBounds(L.latLngBounds(MAP_B).pad(0.02));                 // حصرُ التنقّل على الخريطة
+      if(!lmapFitted){ lmapFitted = true; lmap.fitBounds(MAP_B, { animate:false }); }   // الخريطةُ كاملةً تملأ المربّع
+      lmap.setMinZoom(lmap.getBoundsZoom(L.latLngBounds(MAP_B)));         // لا تصغيرَ أبعدَ من ذلك
+    }, 80);
   }
 
   function bare(s){
