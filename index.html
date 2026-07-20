@@ -2375,8 +2375,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     if(featWired) return; featWired = true;
 
     if(pEdit("featured")){
-      featNameEl.setAttribute("contenteditable", "plaintext-only");
-      featAchEl.setAttribute("contenteditable", "plaintext-only");
+      featNameEl.setAttribute("contenteditable", "plaintext-only"); featNameEl.spellcheck = false;
+      featAchEl.setAttribute("contenteditable", "plaintext-only");  featAchEl.spellcheck = false;
       featNameEl.addEventListener("blur", function(){ saveFeatured({ name: featNameEl.textContent.trim() }); });
       featAchEl.addEventListener("blur", function(){ saveFeatured({ achievements: featAchEl.textContent.replace(/\s+\n/g,"\n").trim() }); });
       // لصقٌ نصّاً صرفاً
@@ -2458,8 +2458,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
         var card = leadersEl.querySelector('.lead[data-slot="' + slot + '"]'); if(!card) return;
         var roleEl = card.querySelector(".lead-role"), nameEl = card.querySelector(".lead-name"),
             photo = card.querySelector(".lead-photo");
-        roleEl.setAttribute("contenteditable", "plaintext-only");
-        nameEl.setAttribute("contenteditable", "plaintext-only");
+        roleEl.setAttribute("contenteditable", "plaintext-only"); roleEl.spellcheck = false;
+        nameEl.setAttribute("contenteditable", "plaintext-only"); nameEl.spellcheck = false;
         roleEl.addEventListener("blur", function(){ saveLeader(slot, { role: roleEl.textContent.trim() }); });
         nameEl.addEventListener("blur", function(){ saveLeader(slot, { name: nameEl.textContent.trim() }); });
         [roleEl, nameEl].forEach(function(el){
@@ -2640,6 +2640,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     document.execCommand("insertText", false, t); }); }
   function caseEditable(cls, ghost, value, canEdit){
     var el = document.createElement("div"); el.className = cls;
+    el.setAttribute("spellcheck", "false");            // لا خطوطَ تدقيقٍ زرقاء/حمراء تحت النصّ
     if(ghost) el.setAttribute("data-ghost", ghost);
     el.textContent = value || "";
     if(canEdit) el.setAttribute("contenteditable", "plaintext-only");
@@ -3133,7 +3134,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     var wrap = document.createElement("span"); wrap.className = "pen";
     var sweep= document.createElement("span"); sweep.className = "sweep";
     var hand = document.createElement("span"); hand.className = "hand";
-    if(canWrite()){ hand.setAttribute("contenteditable", "plaintext-only"); }
+    if(canWrite()){ hand.setAttribute("contenteditable", "plaintext-only"); hand.spellcheck = false; }
     hand.setAttribute("dir", scr === "ar" ? "rtl" : "ltr");
     hand.dataset.ghost = c.ghost;
     hand.textContent = shown;
