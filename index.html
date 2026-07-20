@@ -883,21 +883,29 @@ body[data-view="map"] .sidetools{ display:none !important; }
   box-shadow:0 6px 22px rgba(0,0,0,.4); background:#c9b78f; }
 .leaflet-container{ font-family:"Amiri",serif; background:#c9b78f; }
 .map-legend{ position:absolute; top:12px; inset-inline-start:12px; z-index:600;
-  background:linear-gradient(#efe3c6,#e2d0ab); border:2px solid #8a6d3b; border-radius:5px;
-  padding:9px 11px; max-width:280px; box-shadow:0 3px 10px rgba(0,0,0,.35); }
-.map-legend .lg-title{ font-weight:700; font-size:13px; margin-bottom:6px; color:#3d302b;
-  border-bottom:1px solid rgba(61,48,43,.3); padding-bottom:4px; }
-.map-legend .lg-row{ display:flex; align-items:center; gap:7px; padding:2px 2px; font-size:13px; color:#3d302b; }
-.map-legend input{ accent-color:#2f5d3a; cursor:pointer; flex:0 0 auto; margin:0; }
-.map-legend .lg-icon{ width:26px; height:26px; object-fit:contain; flex:0 0 26px; }
+  background:linear-gradient(#efe3c6,#e2d0ab); border:2px solid #8a6d3b; border-radius:6px;
+  padding:8px 11px; max-width:340px; box-shadow:0 3px 12px rgba(0,0,0,.4);
+  display:flex; flex-direction:column; }
+.map-legend .lg-collapse{ align-self:flex-end; width:27px; height:27px; margin-bottom:5px;
+  border:1px solid #8a6d3b; border-radius:4px; background:#efe3c6; color:#3d302b; cursor:pointer;
+  font-size:17px; line-height:1; padding:0; }
+.map-legend .lg-collapse:hover{ background:#e2d0ab; }
+.map-legend.collapsed{ padding:6px; }
+.map-legend.collapsed .lg-body{ display:none; }
+.map-legend.collapsed .lg-collapse{ margin-bottom:0; }
+.map-legend .lg-title{ font-weight:700; font-size:15px; margin-bottom:7px; color:#3d302b;
+  border-bottom:1px solid rgba(61,48,43,.3); padding-bottom:5px; }
+.map-legend .lg-row{ display:flex; align-items:center; gap:9px; padding:4px 2px; font-size:15px; color:#3d302b; }
+.map-legend input{ accent-color:#2f5d3a; cursor:pointer; flex:0 0 auto; margin:0; width:16px; height:16px; }
+.map-legend .lg-icon{ width:34px; height:34px; object-fit:contain; flex:0 0 34px; }
 .map-legend .lg-lbl{ flex:1 1 auto; white-space:nowrap; }
-.map-legend .lg-ct{ font-size:11px; color:#5b4a3f; min-width:14px; text-align:center; flex:0 0 auto; }
-.map-legend .lg-place{ flex:0 0 auto; width:21px; height:21px; border:1px solid #8a6d3b; border-radius:3px;
-  background:#efe3c6; color:#3d302b; cursor:pointer; font-size:14px; line-height:1; padding:0; }
+.map-legend .lg-ct{ font-size:12px; color:#5b4a3f; min-width:16px; text-align:center; flex:0 0 auto; }
+.map-legend .lg-place{ flex:0 0 auto; width:24px; height:24px; border:1px solid #8a6d3b; border-radius:3px;
+  background:#efe3c6; color:#3d302b; cursor:pointer; font-size:16px; line-height:1; padding:0; }
 .map-legend .lg-place:hover{ background:#e2d0ab; }
 .map-legend .lg-place.on{ background:#2f5d3a; color:#f0dcbe; border-color:#2f5d3a; }
-.map-legend .lg-hint{ margin-top:7px; padding-top:6px; border-top:1px dashed rgba(61,48,43,.3);
-  font-size:11px; color:#5b4a3f; line-height:1.6; }
+.map-legend .lg-hint{ margin-top:8px; padding-top:7px; border-top:1px dashed rgba(61,48,43,.3);
+  font-size:12px; color:#5b4a3f; line-height:1.6; }
 .mapicon{ filter:drop-shadow(0 2px 3px rgba(0,0,0,.45)); cursor:pointer; }
 .map-del{ font-family:"Amiri",serif; font-size:13px; cursor:pointer; width:100%; margin-top:8px;
   background:#8a1c2c; color:#f0dcbe; border:0; border-radius:3px; padding:6px; }
@@ -2091,11 +2099,11 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   }
   function buildMapLegend(){
     var el = document.getElementById("mapLegend"); if(!el) return;
-    var edit = canEditMap(), html = '<div class="lg-title">الطبقات</div>';
+    var edit = canEditMap(), body = '<div class="lg-title">الطبقات</div>';
     Object.keys(MAP_CATS).forEach(function(k){
       var c = MAP_CATS[k];
       if(mapLegendState[k] === undefined) mapLegendState[k] = c.on;
-      html += '<div class="lg-row" data-cat="'+k+'">'+
+      body += '<div class="lg-row" data-cat="'+k+'">'+
         '<input type="checkbox" data-tog="'+k+'"'+(mapLegendState[k]?" checked":"")+'>'+
         '<img class="lg-icon" src="'+catIconUrl(k)+'" alt="">'+
         '<span class="lg-lbl">'+esc(c.label)+'</span>'+
@@ -2103,8 +2111,14 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
         (edit ? '<button class="lg-place" data-place="'+k+'" title="ضع علامةً من هذا الصنف">＋</button>' : '') +
       '</div>';
     });
-    if(edit) html += '<div class="lg-hint" id="lgHint">اختر ＋ ثمّ انقر الخريطة</div>';
-    el.innerHTML = html;
+    if(edit) body += '<div class="lg-hint" id="lgHint">اختر ＋ ثمّ انقر الخريطة</div>';
+    el.innerHTML = '<button class="lg-collapse" id="lgCollapse" title="طيّ الطبقات">›</button>' +
+                   '<div class="lg-body">' + body + '</div>';
+    var cb = document.getElementById("lgCollapse");
+    if(cb) cb.addEventListener("click", function(){
+      var col = el.classList.toggle("collapsed");
+      cb.textContent = col ? "‹" : "›"; cb.title = col ? "فتح الطبقات" : "طيّ الطبقات";
+    });
     Array.prototype.forEach.call(el.querySelectorAll("input[data-tog]"), function(inp){
       inp.addEventListener("change", function(){
         var k = inp.dataset.tog; mapLegendState[k] = inp.checked;
@@ -3760,6 +3774,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     { key:"leaders",  label:"القيادة",             del:false, st:false },
     { key:"charter",  label:"كتيب القوانين",        del:false, st:false },
     { key:"featured", label:"موظف الأسبوع",         del:false, st:true  },
+    { key:"map",      label:"خارطة الولايات والأقاليم", del:false, st:false }, // تعديل = وضع/حذف علامات
   ];
   var STAMP_CATS = [
     { key:"functional", label:"وظيفيّة" }, { key:"ranks", label:"رتب" },
