@@ -657,6 +657,12 @@ body[data-role="reader"] .sidetools{ display:none; }
 /* الزائر (غريبٌ أو طلبٌ قيد النظر): لا أدواتِ مكتب، ولا بطاقةَ موظف الأسبوع */
 body[data-role="visitor"] .sidetools{ display:none !important; }
 body[data-role="visitor"] .featured{ display:none !important; }
+/* أدواتُ الأختام (م٢): تظهر فقط لمن له حقُّ ختمٍ على التبويب الحاليّ (data-stamp) */
+body:not([data-stamp]) .tool-acc,
+body:not([data-stamp]) .side-size,
+body:not([data-stamp]) .side-hint{ display:none !important; }
+/* صندوق الأدوات كلُّه يختفي إن لا ختمَ ولا صلاحيّةَ منحٍ — فلا يبقى صندوقٌ فارغ */
+body:not([data-stamp]):not([data-g]) .sidetools{ display:none !important; }
 
 .side-title{ font-family:"Amiri",serif; font-weight:700; font-size:14px; color:var(--ink-press);
   text-align:center; border-bottom:1px solid rgba(61,48,43,.3); padding-bottom:6px; margin-bottom:2px; }
@@ -1572,7 +1578,7 @@ body[data-panel] .panel-back{ display:flex; }
   <!-- أقسامٌ تُطوى وتُفتح — نافذةٌ واحدة مفتوحة. أصناف الأزرار تبقى كما هي فلا ينكسر ربطها. -->
   <div class="tool-acc side-write" id="toolAcc">
 
-    <div class="tool-cat">
+    <div class="tool-cat" data-cat="functional">
       <button type="button" class="tool-head" aria-expanded="false"><span class="tool-chev"></span><span>أدوات الأختام الوظيفيّة</span></button>
       <div class="tool-body">
         <button type="button" class="stamp-btn" style="--c:#A34239" data-t="مفصول"  data-c="#A32020">مفصول</button>
@@ -1585,7 +1591,7 @@ body[data-panel] .panel-back{ display:flex; }
       </div>
     </div>
 
-    <div class="tool-cat">
+    <div class="tool-cat" data-cat="ranks">
       <button type="button" class="tool-head" aria-expanded="false"><span class="tool-chev"></span><span>أختام رتب الوكالة</span></button>
       <div class="tool-body">
         <!-- رُتَبٌ مستطيلة (box:) بحبرٍ رماديّ غامق -->
@@ -1602,7 +1608,7 @@ body[data-panel] .panel-back{ display:flex; }
       </div>
     </div>
 
-    <div class="tool-cat">
+    <div class="tool-cat" data-cat="administrative">
       <button type="button" class="tool-head" aria-expanded="false"><span class="tool-chev"></span><span>أدوات الأختام الإداريّة</span></button>
       <div class="tool-body">
         <!-- الختم الرئاسي — خاتم العين، نصّه يُضبَط في JS -->
@@ -1612,7 +1618,7 @@ body[data-panel] .panel-back{ display:flex; }
       </div>
     </div>
 
-    <div class="tool-cat">
+    <div class="tool-cat" data-cat="executive">
       <button type="button" class="tool-head" aria-expanded="false"><span class="tool-chev"></span><span>أدوات ختمٍ تنفيذيّة</span></button>
       <div class="tool-body">
         <!-- ختم القبض — مربّع بحبرٍ أزرق، سطران؛ النصّ يُضبَط في JS -->
@@ -1620,7 +1626,7 @@ body[data-panel] .panel-back{ display:flex; }
       </div>
     </div>
 
-    <div class="tool-cat">
+    <div class="tool-cat" data-cat="general">
       <button type="button" class="tool-head" aria-expanded="false"><span class="tool-chev"></span><span>أدوات أختامٍ عامّة</span></button>
       <div class="tool-body">
         <!-- النجمة — تأخذ لونها من عجلة الألوان، فتُضرَب بأيّ لون -->
@@ -1881,6 +1887,22 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     if(board.kind) document.body.setAttribute("data-view", board.kind);   // leaders | files
     else document.body.removeAttribute("data-view");
   }
+  // فرضُ الصلاحيّات على التبويب الحاليّ (م٢): data-role حسب التعديل، وأعلامُ الحذف/الأختام
+  function applyBoardPerms(){
+    if(!role){ document.body.setAttribute("data-role", "visitor");
+      document.body.removeAttribute("data-del"); document.body.removeAttribute("data-stamp"); return; }
+    document.body.setAttribute("data-role", isOwner() ? "owner" : (pEdit(board.key) ? "editor" : "reader"));
+    if(pDel(board.key))      document.body.setAttribute("data-del", "1");   else document.body.removeAttribute("data-del");
+    if(pCanStamp(board.key)) document.body.setAttribute("data-stamp", "1"); else document.body.removeAttribute("data-stamp");
+    applyStampFilter();
+  }
+  // إظهار/إخفاء مجموعات الأختام (٥) حسب المسموح على التبويب الحاليّ
+  function applyStampFilter(){
+    var cats = document.querySelectorAll("#toolAcc .tool-cat[data-cat]");
+    Array.prototype.forEach.call(cats, function(el){
+      el.style.display = pStampCat(board.key, el.getAttribute("data-cat")) ? "" : "none";
+    });
+  }
   async function switchBoard(key){
     if(!BOARDS[key] || key === board.key || !isVisibleBoard(key)) return;
     board = BOARDS[key];
@@ -1888,7 +1910,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     page = 0; selectedStampId = null; lastMatchId = 0;
     disarm(); closeCalAsk();       // لا يبقى ختمٌ محمولٌ ولا نافذةُ تقويمٍ يتيمةٌ عبر التبديل
     if(qEl) qEl.value = ""; if(hitEl) hitEl.textContent = "";
-    buildTabs(); applyView();
+    buildTabs(); applyView(); applyBoardPerms();
     if(board.kind){
       // لوحةٌ خاصّة (قيادة/ملفّات): لا جدولَ في السجلّ ولا اشتراكٌ جدوليّ عبر liveChannel.
       // نوقف قناة السجلّ السابق كي لا يُطلق حدثٌ متأخّرٌ إعادة جلبٍ على جدولٍ لا وجود له.
@@ -1946,7 +1968,16 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     for(var i=0;i<RANK_DEFS.length;i++) if(RANK_DEFS[i].key===r) return RANK_DEFS[i].label; return ""; }
   var roleLabel = rankLabel;                                    // اسمٌ قديمٌ يبقى للتوافق
   const myLevel          = () => rankLevel(role);
-  const canWrite         = () => myLevel() >= 10;               // حارس مساعد فأعلى
+  // ── محرّك الصلاحيّات (م٢): صلاحيّاتي المحلولة لكلّ تبويب — تُجلب بـ my_perms() ──
+  // قبل الجلب أو عند تعذّره: يرجع للأصل (محرّرٌ = مستوى ≥ ١٠) فلا يتغيّر السلوك.
+  var curPerms = null;
+  function pEdit(b){ if(!role) return false; if(curPerms && curPerms[b] && typeof curPerms[b].edit === "boolean") return curPerms[b].edit; return myLevel() >= 10; }
+  function pDel(b){  if(!role) return false; if(curPerms && curPerms[b] && typeof curPerms[b].del  === "boolean") return curPerms[b].del;  return myLevel() >= 10; }
+  function pStamps(b){ if(!role) return []; if(curPerms && curPerms[b] && Array.isArray(curPerms[b].stamps)) return curPerms[b].stamps; return myLevel() >= 10 ? ["*"] : []; }
+  function pCanStamp(b){ return pStamps(b).length > 0; }
+  function pStampCat(b, cat){ var s = pStamps(b); return s.indexOf("*") >= 0 || s.indexOf(cat) >= 0; }
+  async function loadPerms(){ try{ var r = await sb.rpc("my_perms"); if(!r.error && r.data) curPerms = r.data; }catch(e){} }
+  const canWrite         = () => pEdit(board.key);             // تعديلُ التبويب الحاليّ حسب المحرّك
   const isOwner          = () => role === "owner";
   const canOpenCase      = () => myLevel() >= 10;               // حارس مساعد فأعلى
   const canApproveCase   = () => myLevel() >= 80;               // عميل خاص فأعلى
@@ -1962,7 +1993,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     let s = null;
     try{ const r = await sb.auth.getSession(); s = r.data.session; }catch(e){}
     session = s;
-    if(session){ uid = session.user.id; role = await fetchRole(); }
+    if(session){ uid = session.user.id; role = await fetchRole(); if(role) await loadPerms(); }
     else { uid = null; role = null; }
     await enterLedger();               // بوّابةٌ مرنة: يدخل الجميع؛ الوضعُ حسب الجلسة والرتبة
   }
@@ -2014,7 +2045,6 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     document.body.removeAttribute("data-gate");
     document.body.removeAttribute("data-booting");
     var member = !!role;
-    document.body.setAttribute("data-role", member ? tierOf(role) : "visitor");   // مالك/محرّر/قارئ أو زائر
     if(member && canGrant()) document.body.setAttribute("data-g", "1"); else document.body.removeAttribute("data-g");
     updateTopbar();
     if(member && canGrant()) wireOwnerPanel();
@@ -2023,7 +2053,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     if(member) wireCases();                // القضايا — للأعضاء فقط (الزائر لا يقرؤها)
     // اللوحة الافتراضيّة: عضوٌ → سجل العملاء؛ زائرٌ → القيادة إن كانت الحاليّةُ غيرَ مرئيّةٍ له
     if(!member && !isVisibleBoard(board.key)) board = BOARDS.leadership;
-    buildTabs(); applyView();
+    buildTabs(); applyView(); applyBoardPerms();
     if(board.kind){                        // لوحةٌ خاصّة (قيادة/ملفّات/ميثاق) — لا جدول
       if(liveChannel){ sb.removeChannel(liveChannel); liveChannel = null; }
       if(board.kind === "leaders") loadLeaders();
@@ -2107,7 +2137,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     loadFeatured();
     if(featWired) return; featWired = true;
 
-    if(canWrite()){
+    if(pEdit("featured")){
       featNameEl.setAttribute("contenteditable", "plaintext-only");
       featAchEl.setAttribute("contenteditable", "plaintext-only");
       featNameEl.addEventListener("blur", function(){ saveFeatured({ name: featNameEl.textContent.trim() }); });
@@ -2186,7 +2216,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     loadLeaders();
     if(leadWired) return; leadWired = true;
 
-    if(canWrite()){
+    if(pEdit("leaders")){
       [1, 2, 3].forEach(function(slot){
         var card = leadersEl.querySelector('.lead[data-slot="' + slot + '"]'); if(!card) return;
         var roleEl = card.querySelector(".lead-role"), nameEl = card.querySelector(".lead-name"),
@@ -2807,7 +2837,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     if(res.error){ toast("تعذّر جلب السجل: " + res.error.message, true); pageRecs = []; total = 0; pageStamps = []; return; }
     total = res.count || 0;
     pageRecs = (res.data || []).map(toRec);
-    if(canWrite()){
+    if(pCanStamp(board.key)){
       const st = await sb.from(board.stamps).select("*").eq("folio", page);
       if(e !== epoch) return;
       pageStamps = st.data || [];
@@ -2937,7 +2967,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     var bDel = document.createElement("button");
     bDel.type = "button"; bDel.textContent = "−"; bDel.title = "حذف السطر (Alt+D)";
     bDel.addEventListener("click", function(ev){ ev.stopPropagation(); removeRow(rec._k); });
-    marks.appendChild(bStrike); marks.appendChild(bDel);
+    marks.appendChild(bStrike);
+    if(pDel(board.key)) marks.appendChild(bDel);   // الحذف الفعليّ حسب صلاحيّة الحذف للتبويب
     tr.lastChild.appendChild(marks);
   }
 
@@ -3089,6 +3120,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     if(b) b.className = want ? "on" : "";
   }
   async function removeRow(k){
+    if(!pDel(board.key)){ toast("لا صلاحية حذفٍ في هذا السجل", true); return; }
     if(!confirm("حذف هذا القيد نهائياً؟")) return;
     var res = await sb.from(board.table).delete().eq("id", k).select().single();
     if(res.error){ toast("تعذّر الحذف: " + res.error.message, true); return; }
@@ -3104,7 +3136,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
       if(!tr.classList.contains("blank-line")) toggleStrike(tr.dataset.k); ev.preventDefault(); return;
     }
     if(ev.altKey && (ev.key === "d" || ev.key === "D" || ev.key === "ي")){
-      if(!tr.classList.contains("blank-line")){ hand.blur(); removeRow(tr.dataset.k); } ev.preventDefault(); return;
+      if(!tr.classList.contains("blank-line") && pDel(board.key)){ hand.blur(); removeRow(tr.dataset.k); } ev.preventDefault(); return;
     }
     if(ev.key === "Enter"){
       ev.preventDefault(); var f = td.dataset.field; hand.blur();
