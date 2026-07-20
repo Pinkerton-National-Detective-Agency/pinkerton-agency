@@ -1227,7 +1227,23 @@ body[data-gate] > .leaf, body[data-gate] > .desk, body[data-gate] > .pager{ disp
    ═══════════════════════════════════════════════════════════════════════════ */
 .panel-back{ position:fixed; inset:0; z-index:60; display:none; background:rgba(23,19,15,.7);
   align-items:flex-start; justify-content:center; padding:40px 16px; overflow:auto; }
-body[data-panel] .panel-back{ display:flex; }
+body[data-panel] #panelback{ display:flex; }
+body[data-perms] #permsback{ display:flex; }
+/* محرّر الصلاحيّات (م٣) */
+.perms-panel{ width:min(680px,100%); }
+.perm-row{ display:flex; align-items:flex-start; gap:10px; flex-wrap:wrap; padding:10px 2px;
+  border-bottom:1px solid rgba(61,48,43,.14); }
+.perm-bname{ flex:0 0 118px; font-family:"Amiri",serif; font-weight:700; font-size:15px; color:var(--ink-press); padding-top:2px; }
+.perm-cells{ flex:1 1 auto; display:flex; flex-direction:column; gap:7px; }
+.perm-acts{ display:flex; gap:14px; flex-wrap:wrap; }
+.perm-chk{ display:inline-flex; align-items:center; gap:5px; font-family:"Amiri",serif; font-size:13.5px;
+  color:var(--ink-press); cursor:pointer; letter-spacing:0; }
+.perm-chk input{ width:15px; height:15px; accent-color:#2F5D3A; cursor:pointer; }
+.perm-stamps{ display:flex; gap:9px; flex-wrap:wrap; padding-inline-start:2px; }
+.perm-stamps .perm-lbl{ font-family:"Amiri",serif; font-size:12px; color:var(--ink); opacity:.7; align-self:center; }
+.perm-stamps .perm-chk{ font-size:12.5px; opacity:.92; }
+.perms-actions{ display:flex; justify-content:space-between; gap:10px; margin-top:16px;
+  padding-top:12px; border-top:2px solid rgba(61,48,43,.3); }
 .panel{ width:min(760px,100%); background-color:var(--paper); border-radius:3px;
   box-shadow:0 24px 60px -18px rgba(0,0,0,.8); padding:26px 30px 30px; isolation:isolate; position:relative; }
 .panel::before{ content:""; position:absolute; inset:0; filter:url(#grain); opacity:.45;
@@ -1705,6 +1721,23 @@ body[data-panel] .panel-back{ display:flex; }
 
     <div class="panel-sec">الأعضاء المخوَّلون</div>
     <div id="memberList"><p class="panel-empty">…</p></div>
+
+    <div class="panel-sec">صلاحيّاتُ الرتب (افتراضٌ لكلّ رتبة)</div>
+    <div id="rankPermsList"><p class="panel-empty">…</p></div>
+  </div>
+</div>
+
+<!-- ═══ محرّر الصلاحيّات — شبكةٌ لرتبةٍ أو شخصٍ بعينه ═══ -->
+<div class="panel-back" id="permsback">
+  <div class="panel perms-panel">
+    <button class="close" id="permsclose" aria-label="إغلاق">×</button>
+    <h2 id="permsTitle">الصلاحيّات</h2>
+    <p class="latin" id="permsSub"></p>
+    <div id="permsGrid"></div>
+    <div class="perms-actions">
+      <button type="button" class="pbtn" id="permsReset">إرجاعٌ للافتراض</button>
+      <button type="button" class="pbtn grant" id="permsSave">حفظ</button>
+    </div>
   </div>
 </div>
 
@@ -3427,22 +3460,30 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     ownerBtn.onclick = openPanel;
     panelClose.onclick = function(){ document.body.removeAttribute("data-panel"); };
     panelBack.addEventListener("click", function(ev){ if(ev.target === panelBack) document.body.removeAttribute("data-panel"); });
+    if(permsClose) permsClose.onclick = function(){ document.body.removeAttribute("data-perms"); };
+    if(permsBack)  permsBack.addEventListener("click", function(ev){ if(ev.target === permsBack) document.body.removeAttribute("data-perms"); });
+    if(permsSave)  permsSave.onclick  = savePerms;
+    if(permsReset) permsReset.onclick = resetPerms;
   }
   async function openPanel(){
     document.body.setAttribute("data-panel","1");
     pendingList.innerHTML = '<p class="panel-empty">…</p>';
     memberList.innerHTML  = '<p class="panel-empty">…</p>';
+    if(rankPermsList) rankPermsList.innerHTML = '<p class="panel-empty">…</p>';
     var pr = await Promise.all([
       sb.from("identity").select("user_id,discord_id,username,avatar_url,first_seen").order("first_seen", { ascending:false }),
-      sb.from("grants").select("user_id,role,note,granted_at,display_name")
+      sb.from("grants").select("user_id,role,note,granted_at,display_name"),
+      sb.from("rank_perms").select("rank,perms")
     ]);
     var people = pr[0].data || [], grants = pr[1].data || [];
     if(pr[0].error || pr[1].error){ toast("تعذّر جلب اللوحة", true); return; }
+    rankPermsCache = {}; (pr[2].data || []).forEach(function(r){ rankPermsCache[r.rank] = r.perms || {}; });
     var byId = new Map(grants.map(function(g){ return [g.user_id, g]; }));
     var pending = people.filter(function(p){ return !byId.has(p.user_id); });
     var members = people.filter(function(p){ return byId.has(p.user_id); });
     renderPending(pending);
     renderMembers(members, byId);
+    renderRankPerms();
   }
 
   function personRow(p, actionsHtml){
@@ -3485,8 +3526,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
       }
       var nm  = '<input class="pdname" data-act="dname" data-id="' + esc(p.user_id) + '" value="' + esc(g.display_name || "") + '" placeholder="' + esc(p.username || "الاسم") + '" title="الاسمُ المعروض في الموقع" maxlength="60">';
       var sel = '<select class="rank-sel" data-act="change" data-id="' + esc(p.user_id) + '">' + rankOptions(g.role) + '</select>';
+      var pm  = '<button class="pbtn" data-act="personperm" data-id="' + esc(p.user_id) + '" data-rank="' + esc(g.role) + '" data-label="' + esc(g.display_name || p.username || "عضو") + '">صلاحيّات</button>';
       var rev = '<button class="pbtn revoke" data-act="revoke" data-id="' + esc(p.user_id) + '">اسحب</button>';
-      return personRow(p, nm + sel + rev);
+      return personRow(p, nm + sel + pm + rev);
     }).join("");
     wirePanelButtons(memberList);
   }
@@ -3513,9 +3555,130 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
             grantRole(el.dataset.id, s ? s.value : "asst_guard");
           }
           if(act === "revoke") revokeRole(el.dataset.id);
+          if(act === "rankperm")   openPermsEditor("rank", el.dataset.id, el.dataset.label || el.dataset.id, el.dataset.id);
+          if(act === "personperm") openPermsEditor("person", el.dataset.id, el.dataset.label || "عضو", el.dataset.rank);
         });
       }
     });
+  }
+
+  // ── محرّر الصلاحيّات (م٣): افتراضٌ لكلّ رتبة + تجاوزٌ لكلّ شخص ────────────────
+  var PERM_BOARDS = [
+    { key:"agents",   label:"سجل العملاء",        del:true,  st:true  },
+    { key:"banned",   label:"القائمة السوداء",     del:true,  st:true  },
+    { key:"cases",    label:"المطلوبون والقضايا",  del:true,  st:true  },
+    { key:"leaders",  label:"القيادة",             del:false, st:false },
+    { key:"charter",  label:"كتيب القوانين",        del:false, st:false },
+    { key:"featured", label:"موظف الأسبوع",         del:false, st:true  },
+  ];
+  var STAMP_CATS = [
+    { key:"functional", label:"وظيفيّة" }, { key:"ranks", label:"رتب" },
+    { key:"administrative", label:"إداريّة" }, { key:"executive", label:"تنفيذيّة" },
+    { key:"general", label:"عامّة" },
+  ];
+  var permsBack = $("permsback"), permsClose = $("permsclose"), permsGrid = $("permsGrid"),
+      permsTitle = $("permsTitle"), permsSub = $("permsSub"), permsReset = $("permsReset"),
+      permsSave = $("permsSave"), rankPermsList = $("rankPermsList");
+  var rankPermsCache = {};                 // { rank: perms-jsonb }
+  var permsEditing = null;                 // { type:'rank'|'person', id, label, rankKey }
+
+  function fbEdit(rk){ return rankLevel(rk) >= 10; }        // الأصل: محرّرٌ = مستوى ≥ ١٠
+  function effVal(explicit, rankKey, b, act){
+    if(explicit && explicit[b] && typeof explicit[b][act] === "boolean") return explicit[b][act];
+    if(permsEditing.type === "person"){ var rp = rankPermsCache[rankKey];
+      if(rp && rp[b] && typeof rp[b][act] === "boolean") return rp[b][act]; }
+    return fbEdit(rankKey);
+  }
+  function effStamps(explicit, rankKey, b){
+    if(explicit && explicit[b] && Array.isArray(explicit[b].stamps)) return explicit[b].stamps;
+    if(permsEditing.type === "person"){ var rp = rankPermsCache[rankKey];
+      if(rp && rp[b] && Array.isArray(rp[b].stamps)) return rp[b].stamps; }
+    return fbEdit(rankKey) ? ["*"] : [];
+  }
+  function permChk(k, label, checked){
+    var l = document.createElement("label"); l.className = "perm-chk";
+    var i = document.createElement("input"); i.type = "checkbox"; i.dataset.k = k; if(checked) i.checked = true;
+    l.appendChild(i); l.appendChild(document.createTextNode(label)); return l;
+  }
+  function buildPermsGrid(explicit){
+    permsGrid.innerHTML = ""; var rk = permsEditing.rankKey;
+    PERM_BOARDS.forEach(function(b){
+      var row = document.createElement("div"); row.className = "perm-row";
+      var nm = document.createElement("div"); nm.className = "perm-bname"; nm.textContent = b.label; row.appendChild(nm);
+      var cells = document.createElement("div"); cells.className = "perm-cells";
+      var acts = document.createElement("div"); acts.className = "perm-acts";
+      acts.appendChild(permChk("edit:" + b.key, "تعديل", effVal(explicit, rk, b.key, "edit")));
+      if(b.del) acts.appendChild(permChk("del:" + b.key, "حذف", effVal(explicit, rk, b.key, "del")));
+      cells.appendChild(acts);
+      if(b.st){
+        var sc = effStamps(explicit, rk, b.key), all = sc.indexOf("*") >= 0;
+        var sd = document.createElement("div"); sd.className = "perm-stamps";
+        var lb = document.createElement("span"); lb.className = "perm-lbl"; lb.textContent = "أختام:"; sd.appendChild(lb);
+        STAMP_CATS.forEach(function(c){ sd.appendChild(permChk("stamp:" + b.key + ":" + c.key, c.label, all || sc.indexOf(c.key) >= 0)); });
+        cells.appendChild(sd);
+      }
+      row.appendChild(cells); permsGrid.appendChild(row);
+    });
+  }
+  function collectPerms(){
+    var out = {};
+    PERM_BOARDS.forEach(function(b){
+      var o = {}, e = permsGrid.querySelector('input[data-k="edit:' + b.key + '"]'); o.edit = !!(e && e.checked);
+      if(b.del){ var d = permsGrid.querySelector('input[data-k="del:' + b.key + '"]'); o.del = !!(d && d.checked); }
+      if(b.st){ var arr = []; STAMP_CATS.forEach(function(c){
+        var s = permsGrid.querySelector('input[data-k="stamp:' + b.key + ':' + c.key + '"]'); if(s && s.checked) arr.push(c.key); }); o.stamps = arr; }
+      out[b.key] = o;
+    });
+    return out;
+  }
+  async function openPermsEditor(type, id, label, rankKey){
+    permsEditing = { type:type, id:id, label:label, rankKey:rankKey };
+    permsTitle.textContent = (type === "rank" ? "صلاحيّاتُ رتبة: " : "صلاحيّاتُ: ") + label;
+    permsSub.textContent = type === "rank"
+      ? "افتراضٌ لكلّ من يحمل هذه الرتبة (ما لم يُخصَّص شخصيّاً)"
+      : "تجاوزٌ خاصٌّ بهذا الشخص فوق رتبته";
+    var explicit = null;
+    if(type === "rank"){ explicit = rankPermsCache[id] || null; }
+    else{
+      var res = await sb.from("grants").select("perms").eq("user_id", id).maybeSingle();
+      if(res.error){ toast("تعذّر الجلب: " + res.error.message, true); return; }
+      explicit = (res.data && res.data.perms && Object.keys(res.data.perms).length) ? res.data.perms : null;
+    }
+    buildPermsGrid(explicit);
+    document.body.setAttribute("data-perms", "1");
+  }
+  async function savePerms(){
+    var perms = collectPerms(), res;
+    if(permsEditing.type === "rank"){
+      res = await sb.from("rank_perms").upsert({ rank: permsEditing.id, perms: perms }).select().single();
+      if(!res.error) rankPermsCache[permsEditing.id] = perms;
+    }else res = await sb.from("grants").update({ perms: perms }).eq("user_id", permsEditing.id).select().single();
+    if(res.error){ toast("تعذّر الحفظ: " + res.error.message, true); return; }
+    toast("حُفظت الصلاحيّات — تسري عند إعادة تحميل صاحبها");
+    document.body.removeAttribute("data-perms");
+    if(document.body.hasAttribute("data-panel")) openPanel();
+  }
+  async function resetPerms(){
+    var res;
+    if(permsEditing.type === "rank"){
+      res = await sb.from("rank_perms").upsert({ rank: permsEditing.id, perms: {} }).select().single();
+      if(!res.error) rankPermsCache[permsEditing.id] = {};
+    }else res = await sb.from("grants").update({ perms: {} }).eq("user_id", permsEditing.id).select().single();
+    if(res.error){ toast("تعذّر الإرجاع: " + res.error.message, true); return; }
+    toast("أُرجعت للافتراض");
+    document.body.removeAttribute("data-perms");
+    if(document.body.hasAttribute("data-panel")) openPanel();
+  }
+  function renderRankPerms(){
+    var ranks = assignableRanks();
+    if(!ranks.length){ rankPermsList.innerHTML = '<p class="panel-empty">لا رتب.</p>'; return; }
+    rankPermsList.innerHTML = ranks.map(function(d){
+      var set = rankPermsCache[d.key] && Object.keys(rankPermsCache[d.key]).length;
+      return '<div class="person" style="gap:10px"><div class="pinfo"><div class="pname">' + esc(d.label) + '</div>' +
+        '<div class="pid">' + (set ? "مُخصَّصة" : "افتراضيّة") + '</div></div>' +
+        '<div class="pacts"><button class="pbtn" data-act="rankperm" data-id="' + esc(d.key) + '" data-label="' + esc(d.label) + '">صلاحيّات</button></div></div>';
+    }).join("");
+    wirePanelButtons(rankPermsList);
   }
 
   async function grantRole(id, r){
