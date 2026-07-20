@@ -898,12 +898,14 @@ body[data-view="map"] .sidetools{ display:none !important; }
 .leaflet-popup-tip{ background:#efe3c6; }
 .map-pop b{ font-size:15px; color:#3d302b; } .map-pop p{ margin:4px 0 0; font-size:13px; color:#5b4a3f; }
 /* تبويبُ الخريطة وحده يتّسع ليملأ الشاشة — مستقلٌّ، لا يمسّ عرضَ بقيّة التبويبات (٩٦٠px) */
-body[data-view="map"]{ overflow-x:hidden; }                      /* لا شريطَ تمريرٍ أفقيّ من ملء العرض */
-body[data-view="map"] .leaf{ width:100vw; max-width:100vw; min-width:0;
-  margin-left:calc(50% - 50vw); margin-right:calc(50% - 50vw); padding:0; box-shadow:none; }
+body[data-view="map"]{ overflow:hidden; }                        /* لا تمريرَ — الخريطةُ مثبّتةٌ ملءَ ما تحت التبويبات */
 body[data-view="map"] .masthead{ display:none; }                 /* لا شريطَ ورقٍ فوق الخريطة */
-body[data-view="map"] .mapboard{ width:100%; margin:0; }
-body[data-view="map"] #lmap{ height:88vh; border:0; border-radius:0; background:#241d18; }
+body[data-view="map"] .desk{ display:none !important; }          /* لا شريطَ أدوات الدفتر أسفلَ الخريطة */
+body[data-view="map"] .leaf{ position:fixed; inset:96px 0 0 0; z-index:5;
+  width:auto; max-width:none; min-width:0; margin:0; padding:0; box-shadow:none; }
+body[data-view="map"] .mapboard{ position:absolute; inset:0; width:auto; height:auto; margin:0; }
+body[data-view="map"] .map-wrap{ height:100%; }
+body[data-view="map"] #lmap{ height:100%; border:0; border-radius:0; background:#241d18; }
 body[data-view="map"] .leaflet-container{ background:#241d18; }   /* لا يظهر إلا خلفَ الخريطة إن وُجد */
 
 .leaders-head{ font-family:"Amiri",serif; font-weight:700; font-size:20px; color:var(--ink-press);
