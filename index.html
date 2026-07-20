@@ -8,6 +8,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Aref+Ruqaa:wght@400;700&family=Aref+Ruqaa+Ink:wght@400;700&family=Lateef:wght@400;500&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Herr+Von+Muellerhoff&family=Rye&display=swap" rel="stylesheet">
 
+<!-- Leaflet — خريطةٌ تفاعليّة (تبويب خارطة الولايات والأقاليم) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <!--
   نسخة الباشكاتب — The Chief Clerk's Copy
   سجل عملاء وكالة پينكرتون الوطنية للتحرّي · مكتب شيكاغو · ملزمة ٤٧
@@ -870,6 +874,29 @@ body[data-view="charter"] .sidetools{ display:none !important; }
 body[data-view="leaders"] .leaders{ display:block; }
 body[data-view="files"]   .cases{ display:block; }
 body[data-view="charter"] .charter{ display:block; }
+/* خارطة الولايات والأقاليم — تظهر ملءَ العرض، وتُخفى أدواتُ المكتب */
+body[data-view="map"] .mapboard{ display:block; }
+body[data-view="map"] .sidetools{ display:none !important; }
+.mapboard{ display:none; width:min(1100px,96%); margin:6px auto 0; }
+.map-wrap{ position:relative; }
+#lmap{ height:72vh; min-height:420px; border:3px solid #3D302B; border-radius:3px;
+  box-shadow:0 6px 22px rgba(0,0,0,.4); background:#c9b78f; }
+.leaflet-container{ font-family:"Amiri",serif; background:#c9b78f; }
+.map-legend{ position:absolute; top:12px; inset-inline-start:12px; z-index:600;
+  background:linear-gradient(#efe3c6,#e2d0ab); border:2px solid #8a6d3b; border-radius:5px;
+  padding:9px 11px; max-width:220px; box-shadow:0 3px 10px rgba(0,0,0,.35); }
+.map-legend .lg-title{ font-weight:700; font-size:13px; margin-bottom:6px; color:#3d302b;
+  border-bottom:1px solid rgba(61,48,43,.3); padding-bottom:4px; }
+.map-legend label{ display:flex; align-items:center; gap:7px; padding:3px 2px; cursor:pointer; font-size:13px; color:#3d302b; }
+.map-legend input{ accent-color:#2f5d3a; cursor:pointer; }
+.map-legend .lg-dot{ width:17px; height:17px; border-radius:50%; display:grid; place-items:center; color:#f3e7cc; font-size:10px; flex:0 0 17px; }
+.map-legend .lg-ct{ margin-inline-start:auto; font-size:11px; color:#5b4a3f; }
+.mappin{ width:28px; height:28px; border-radius:50% 50% 50% 0; transform:rotate(-45deg);
+  border:2px solid #f3e7cc; box-shadow:0 2px 4px rgba(0,0,0,.4); display:grid; place-items:center; }
+.mappin span{ transform:rotate(45deg); color:#f7eed6; font-size:13px; line-height:1; }
+.leaflet-popup-content-wrapper{ background:#efe3c6; border:1px solid #8a6d3b; }
+.leaflet-popup-tip{ background:#efe3c6; }
+.map-pop b{ font-size:15px; color:#3d302b; } .map-pop p{ margin:4px 0 0; font-size:13px; color:#5b4a3f; }
 
 .leaders-head{ font-family:"Amiri",serif; font-weight:700; font-size:20px; color:var(--ink-press);
   text-align:center; letter-spacing:0; opacity:.85; margin:2px 0 20px;
@@ -1522,6 +1549,14 @@ body[data-perms] #permsback{ display:flex; }
     </div>
   </section>
 
+  <!-- ═══ خارطة الولايات والأقاليم — خريطةٌ تفاعليّة (Leaflet + بلاطات RDR2) ═══ -->
+  <section class="mapboard" id="mapboard" aria-label="خارطة الولايات والأقاليم">
+    <div class="map-wrap">
+      <div id="lmap"></div>
+      <div class="map-legend" id="mapLegend"></div>
+    </div>
+  </section>
+
   <div class="register-wrap">
     <div class="register-bg"></div>
     <table class="register">
@@ -1881,8 +1916,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     },
     // كتيب القوانين — لوحةٌ خاصّة (kind:charter): ميثاقٌ منظّم من نصٍّ مصدر، لا جدول.
     laws: { key:"laws", tab:"كتيب القوانين", kind:"charter" },
+    // خارطة الولايات والأقاليم — لوحةٌ خاصّة (kind:map): خريطة Leaflet، لا جدول.
+    map:  { key:"map",  tab:"خارطة الولايات والأقاليم", kind:"map" },
   };
-  var BOARD_ORDER = ["leadership", "laws", "agents", "cases", "banned"];   // القضايا بعد سجل العملاء
+  var BOARD_ORDER = ["leadership", "laws", "agents", "cases", "banned", "map"];   // القضايا بعد العملاء، والخارطة آخراً
   var board = BOARDS.agents;
   function colOf(field){ if(!board.cols) return null; for(var i=0;i<board.cols.length;i++) if(board.cols[i].field===field) return board.cols[i]; return null; }
   function dbCol(field){ var c = colOf(field); return c ? c.col : field; }
@@ -1952,6 +1989,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
       if(board.kind === "leaders") loadLeaders();
       else if(board.kind === "files") loadCases();
       else if(board.kind === "charter") loadCharter();
+      else if(board.kind === "map") loadMapBoard();
       flip();
       return;
     }
@@ -1959,6 +1997,74 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     subscribeLive();              // نشترك على جدولَي السجلّ الجديد
     await render();
     flip();
+  }
+
+  // ── خارطة الولايات والأقاليم (kind:map) — خريطة Leaflet ببلاطات RDR2 الرسميّة ──
+  var lmap = null, lmapInited = false, mapLayers = {};
+  var MAP_CATS = {
+    office:  { label:"مكتب الوكالة", color:"#2f5d3a", glyph:"★", on:true  },
+    hideout: { label:"مخبأ عصابة",   color:"#8a1c2c", glyph:"☠", on:true  },
+    case:    { label:"موقع قضيّة",    color:"#b07a1e", glyph:"⚖", on:true  },
+    safe:    { label:"بيت آمن",       color:"#2f6f7d", glyph:"⌂", on:false },
+    patrol:  { label:"نقطة دوريّة",   color:"#5a4a8a", glyph:"◈", on:false },
+    wanted:  { label:"مطلوب",         color:"#a3201f", glyph:"✋", on:false },
+  };
+  // علاماتٌ توضيحيّة (عرضٌ فقط الآن) — pos:[lat,lng] بنظام خريطة RDR2. لاحقاً: مخزنٌ مشترك.
+  var MAP_MARKERS = [
+    { cat:"office",  pos:[-72, 88],  title:"مكتب الوكالة", desc:"غيّر الموضعَ لموقعِ مكتبك." },
+    { cat:"hideout", pos:[-56, 62],  title:"مخبأ عصابة",   desc:"مثالٌ — بدّله." },
+    { cat:"hideout", pos:[-92, 120], title:"وكرٌ شرقيّ",    desc:"مثالٌ — بدّله." },
+    { cat:"case",    pos:[-66, 102], title:"موقعُ قضيّة",   desc:"مثالٌ — بدّله." },
+    { cat:"case",    pos:[-104, 72], title:"قضيّةٌ جنوبيّة", desc:"مثالٌ — بدّله." },
+    { cat:"safe",    pos:[-50, 92],  title:"بيتٌ آمن",      desc:"مثالٌ — بدّله." },
+    { cat:"patrol",  pos:[-82, 96],  title:"نقطةُ دوريّة",  desc:"مثالٌ — بدّله." },
+    { cat:"wanted",  pos:[-60, 132], title:"مطلوب",        desc:"مثالٌ — بدّله." },
+  ];
+  function mapPinIcon(cat){
+    var c = MAP_CATS[cat];
+    return L.divIcon({ className:"", iconSize:[28,36], iconAnchor:[14,34], popupAnchor:[0,-32],
+      html:'<div class="mappin" style="background:'+c.color+'"><span>'+c.glyph+'</span></div>' });
+  }
+  function buildMapMarkers(){
+    Object.keys(MAP_CATS).forEach(function(k){ mapLayers[k] = L.layerGroup(); });
+    MAP_MARKERS.forEach(function(m){
+      var mk = L.marker(m.pos, { icon: mapPinIcon(m.cat) });
+      mk.bindPopup('<div class="map-pop"><b>'+esc(m.title)+'</b><p>'+esc(m.desc||"")+'</p></div>');
+      mapLayers[m.cat].addLayer(mk);
+    });
+    Object.keys(MAP_CATS).forEach(function(k){ if(MAP_CATS[k].on) mapLayers[k].addTo(lmap); });
+  }
+  function buildMapLegend(){
+    var el = document.getElementById("mapLegend"); if(!el) return;
+    var html = '<div class="lg-title">الطبقات</div>';
+    Object.keys(MAP_CATS).forEach(function(k){
+      var c = MAP_CATS[k], n = MAP_MARKERS.filter(function(m){ return m.cat===k; }).length;
+      html += '<label><input type="checkbox" data-cat="'+k+'"'+(c.on?" checked":"")+'>'+
+        '<span class="lg-dot" style="background:'+c.color+'">'+c.glyph+'</span>'+esc(c.label)+
+        '<span class="lg-ct">'+n+'</span></label>';
+    });
+    el.innerHTML = html;
+    Array.prototype.forEach.call(el.querySelectorAll("input[data-cat]"), function(inp){
+      inp.addEventListener("change", function(){
+        var k = inp.dataset.cat;
+        if(inp.checked) mapLayers[k].addTo(lmap); else lmap.removeLayer(mapLayers[k]);
+      });
+    });
+  }
+  function loadMapBoard(){
+    if(typeof L === "undefined") return;            // Leaflet لم يُحمَّل بعد
+    if(!lmapInited){
+      lmapInited = true;
+      lmap = L.map("lmap", { preferCanvas:true, attributionControl:false,
+        minZoom:2, maxZoom:7, crs:L.CRS.Simple, zoomControl:true }).setView([-70, 111.75], 3);
+      L.tileLayer("https://s.rsg.sc/sc/images/games/RDR2/map/game/{z}/{x}/{y}.jpg",
+        { noWrap:true, bounds:[[0,0],[-144,176]] }).addTo(lmap);
+      lmap.setMaxBounds([[-160,-120],[25,250]]);
+      buildMapMarkers();
+      buildMapLegend();
+    }
+    // اللوحة كانت مخفيّةً؛ Leaflet يحتاج إعادةَ قياسٍ بعد ظهورها وإلّا يبقى رماديّاً
+    setTimeout(function(){ if(lmap) lmap.invalidateSize(); }, 60);
   }
 
   function bare(s){
@@ -2092,6 +2198,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
       if(board.kind === "leaders") loadLeaders();
       else if(board.kind === "files") loadCases();
       else if(board.kind === "charter") loadCharter();
+      else if(board.kind === "map") loadMapBoard();
     }else{                                 // لوحةٌ جدوليّة (سجل العملاء/القائمة السوداء)
       buildThead();
       await render();
