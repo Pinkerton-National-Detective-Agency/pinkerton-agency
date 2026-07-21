@@ -912,6 +912,25 @@ body[data-view="map"] .sidetools{ display:none !important; }
 .leaflet-popup-content-wrapper{ background:#efe3c6; border:1px solid #8a6d3b; }
 .leaflet-popup-tip{ background:#efe3c6; }
 .map-pop b{ font-size:15px; color:#3d302b; } .map-pop p{ margin:4px 0 0; font-size:13px; color:#5b4a3f; }
+.map-by{ margin:5px 0 0; font-size:12.5px; color:#5b4a3f; font-style:italic; }
+.map-colors{ display:flex; align-items:center; flex-wrap:wrap; gap:5px; margin-top:9px;
+  padding-top:8px; border-top:1px dashed rgba(61,48,43,.28); }
+.map-colors .map-clbl{ font-size:12.5px; color:#3d302b; margin-inline-end:2px; }
+.map-sw{ width:19px; height:19px; border-radius:50%; border:2px solid rgba(255,255,255,.9);
+  box-shadow:0 0 0 1px rgba(61,48,43,.45); cursor:pointer; padding:0; transition:transform .08s; }
+.map-sw:hover{ transform:scale(1.15); }
+.map-sw.on{ box-shadow:0 0 0 2px #3d302b; transform:scale(1.15); }
+.map-sw.none{ background:#efe3c6; color:#8a1c2c; font-size:11px; line-height:1;
+  display:flex; align-items:center; justify-content:center; }
+/* علاماتُ divIcon الملوّنة — هالةٌ ونقطةٌ بلون العلامة */
+.leaflet-div-icon{ background:transparent; border:0; }
+.mkwrap{ background:transparent; border:0; }
+.mk{ position:relative; width:46px; height:46px; cursor:pointer; }
+.mk .mkimg{ width:46px; height:46px; display:block; filter:drop-shadow(0 2px 3px rgba(0,0,0,.45)); }
+.mk.tinted .mkimg{ filter:drop-shadow(0 0 3px var(--mkc)) drop-shadow(0 0 2px var(--mkc)) drop-shadow(0 2px 3px rgba(0,0,0,.5)); }
+.mk .mkdot{ position:absolute; left:50%; top:15px; transform:translate(-50%,-50%);
+  width:13px; height:13px; border-radius:50%; border:2px solid #fff;
+  box-shadow:0 1px 2px rgba(0,0,0,.55); z-index:2; }
 /* تبويبُ الخريطة وحده يتّسع ليملأ الشاشة — مستقلٌّ، لا يمسّ عرضَ بقيّة التبويبات (٩٦٠px) */
 body[data-view="map"]{ overflow:hidden; }                        /* لا تمريرَ — الخريطةُ مثبّتةٌ ملءَ ما تحت التبويبات */
 body[data-view="map"] .masthead{ display:none; }                 /* لا شريطَ ورقٍ فوق الخريطة */
@@ -2180,15 +2199,23 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     ganghq:    { label:"مقر عصابة",            icon:"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",    on:true },
   };
   function catIconUrl(k){ return "data:image/png;base64," + MAP_CATS[k].icon; }
-  function mapPinIcon(cat){
-    return L.icon({ iconUrl: catIconUrl(cat), iconSize:[46,46], iconAnchor:[23,44], popupAnchor:[0,-42], className:"mapicon" });
+  // لوحةُ ألوانٍ جاهزةٌ لتلوين العلامات (نغمات الوكالة)
+  var MAP_COLORS = ["#8a1c2c", "#b8862b", "#2f5d3a", "#274a70", "#6a3d7a", "#a34a1e", "#3d302b", "#5b7d8a"];
+  function validHex(c){ return typeof c === "string" && /^#[0-9a-fA-F]{6}$/.test(c) ? c : null; }
+  // أيقونةٌ divIcon: الصورةُ + (عند وجود لون) هالةٌ ونقطةٌ بلونها
+  function mapPinIcon(cat, color){
+    color = validHex(color);
+    var img = '<img class="mkimg" src="' + catIconUrl(cat) + '" alt="">';
+    var dot = color ? '<span class="mkdot" style="background:' + color + '"></span>' : '';
+    return L.divIcon({ className:"mkwrap", iconSize:[46,46], iconAnchor:[23,44], popupAnchor:[0,-42],
+      html:'<div class="mk' + (color ? " tinted" : "") + '"' + (color ? ' style="--mkc:' + color + '"' : '') + '>' + dot + img + '</div>' });
   }
   function canEditMap(){ return pEdit("map"); }                 // صلاحيّةُ وضع/حذف العلامات
   function catCount(k){ var n=0; for(var i=0;i<mapMarkers.length;i++) if(mapMarkers[i].cat===k) n++; return n; }
 
   async function loadMapMarkers(){
     if(!role) return;
-    try{ var r = await sb.from("map_markers").select("id,cat,lat,lng,title").order("id",{ascending:true});
+    try{ var r = await sb.rpc("map_markers_list");   // يأتي معها اسمُ الواضع ورتبتُه واللون (بلا رقم ديسكورد)
       if(!r.error) mapMarkers = r.data || []; }catch(e){}
     renderMapMarkers();
   }
@@ -2199,7 +2226,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     Object.keys(MAP_CATS).forEach(function(k){ mapLayers[k] = L.layerGroup(); });
     mapMarkers.forEach(function(m){
       if(!MAP_CATS[m.cat]) return;
-      var mk = L.marker([m.lat, m.lng], { icon: mapPinIcon(m.cat) });
+      var mk = L.marker([m.lat, m.lng], { icon: mapPinIcon(m.cat, m.color) });
       mk.bindPopup(mapPopupHtml(m)); mk._mid = m.id; mapMkObjs[m.id] = mk;
       mapLayers[m.cat].addLayer(mk);
     });
@@ -2210,14 +2237,30 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     var c = MAP_CATS[m.cat] || { label:m.cat };
     var h = '<div class="map-pop"><b>'+esc(c.label)+'</b>';
     if(m.title) h += '<p>'+esc(m.title)+'</p>';
-    if(canEditMap()) h += '<button class="map-del" data-mid="'+m.id+'">احذف العلامة</button>';
+    if(m.creator_name){                                     // مَن وضعها: الاسم · الرتبة
+      var who = esc(m.creator_name) + (m.creator_role ? ' · ' + esc(rankLabel(m.creator_role)) : '');
+      h += '<p class="map-by">وضعها: ' + who + '</p>';
+    }
+    if(canEditMap()){                                       // لوحةُ الألوان + الحذف (لمن يملك التعديل)
+      var cur = validHex(m.color);
+      h += '<div class="map-colors" data-mid="'+m.id+'"><span class="map-clbl">لون:</span>';
+      MAP_COLORS.forEach(function(col){
+        h += '<button type="button" class="map-sw'+(cur && cur.toLowerCase()===col?' on':'')+'" data-col="'+col+'" style="background:'+col+'" title="لوّن"></button>';
+      });
+      h += '<button type="button" class="map-sw none'+(!cur?' on':'')+'" data-col="" title="بلا لون">✕</button></div>';
+      h += '<button class="map-del" data-mid="'+m.id+'">احذف العلامة</button>';
+    }
     return h + '</div>';
   }
   async function placeMarker(cat, lat, lng){
-    var title = (prompt("عنوانٌ للعلامة (اختياريّ):", "") || "").trim() || null;
+    var title = await askText({ title:"عنوانُ العلامة", sub:"عنوانٌ مختصر (اختياريّ) — تقدر تلوّنها بعد وضعها بالنقر عليها",
+      placeholder:"مثال: موقعُ سطو الديليجانس", okLabel:"ضع العلامة" });
+    if(title === null) return;                            // ألغى
+    title = (title || "").trim() || null;
     var r = await sb.from("map_markers").insert({ cat:cat, lat:lat, lng:lng, title:title }).select().single();
     if(r.error){ toast("تعذّر وضعُ العلامة: " + r.error.message, true); return; }
-    mapMarkers.push(r.data); renderMapMarkers();
+    await loadMapMarkers();                               // أعِد الجلبَ ليأتي اسمُ الواضع والرتبة
+    toast("وُضعت العلامة");
   }
   async function removeMarker(id){
     if(!confirm("حذفُ هذه العلامة نهائيّاً؟")) return;
@@ -2225,6 +2268,14 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     if(r.error){ toast("تعذّر الحذف: " + r.error.message, true); return; }
     if(!r.data || !r.data.length){ toast("لا تملك صلاحيّةَ حذف هذه العلامة", true); return; }
     mapMarkers = mapMarkers.filter(function(m){ return m.id !== id; }); renderMapMarkers();
+  }
+  async function setMarkerColor(id, color){
+    var col = validHex(color) || null;
+    var r = await sb.from("map_markers").update({ color: col }).eq("id", id).select();  // يتحقّق من الصلاحيّة عبر عدد الصفوف
+    if(r.error){ toast("تعذّر التلوين: " + r.error.message, true); return; }
+    if(!r.data || !r.data.length){ toast("لا تملك صلاحيّةَ تلوين هذه العلامة", true); return; }
+    for(var i=0;i<mapMarkers.length;i++) if(mapMarkers[i].id === id) mapMarkers[i].color = col;
+    renderMapMarkers();
   }
   function updateLegendCounts(){
     var el = document.getElementById("mapLegend"); if(!el) return;
@@ -2282,7 +2333,17 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
       buildMapLegend();
       loadMapMarkers();
       lmap.on("click", function(e){ if(armedCat && canEditMap()){ var c = armedCat; armPlace(null); placeMarker(c, e.latlng.lat, e.latlng.lng); } });
-      lmap.on("popupopen", function(e){ var b = e.popup._contentNode.querySelector(".map-del"); if(b) b.addEventListener("click", function(){ var id = +b.dataset.mid; lmap.closePopup(); removeMarker(id); }); });
+      lmap.on("popupopen", function(e){
+        var node = e.popup._contentNode;
+        var b = node.querySelector(".map-del");
+        if(b) b.addEventListener("click", function(){ var id = +b.dataset.mid; lmap.closePopup(); removeMarker(id); });
+        var cont = node.querySelector(".map-colors");
+        if(cont){ var mid = +cont.dataset.mid;
+          Array.prototype.forEach.call(cont.querySelectorAll(".map-sw"), function(sw){
+            sw.addEventListener("click", function(){ setMarkerColor(mid, sw.dataset.col || null); });
+          });
+        }
+      });
       document.addEventListener("keydown", function(ev){ if(ev.key === "Escape" && armedCat) armPlace(null); });
       try{ sb.channel("map-markers-live").on("postgres_changes", { event:"*", schema:"public", table:"map_markers" }, function(){ loadMapMarkers(); }).subscribe(); }catch(e){}
       lmap.on("resize", function(){ if(lmap){ lmap.setMaxBounds(L.latLngBounds(MAP_B).pad(0.02)); lmap.setMinZoom(lmap.getBoundsZoom(L.latLngBounds(MAP_B))); } });
