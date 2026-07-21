@@ -932,6 +932,75 @@ body[data-view="map"] .map-wrap{ height:100%; }
 body[data-view="map"] #lmap{ height:100%; width:100%; border:0; border-radius:0; background:#d3b790; }
 body[data-view="map"] .leaflet-container{ background:#d3b790; }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   سجل الدوام — لوحةٌ داخل الورقة (كالميثاق)، لا ملءَ شاشة. إثباتُ نشاطٍ بتحقّقٍ
+   من مرحلتين + لوحةٌ أسبوعيّةٌ للقيادة.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.dutyboard{ display:none; position:relative; z-index:2; padding:8px 6px 18px; }
+body[data-view="duty"] .dutyboard{ display:block; }
+body[data-view="duty"] .sidetools{ display:none !important; }
+.duty-wrap{ max-width:900px; margin:0 auto; display:flex; flex-direction:column; gap:15px;
+  font-family:"Amiri",serif; color:#3D302B; }
+/* بطاقةُ الساعة */
+.duty-clock{ text-align:center; padding:20px 14px; border:2px solid #3D302B; border-radius:4px;
+  background:linear-gradient(#f6ecd4,#efe1c1); box-shadow:inset 0 0 0 3px rgba(120,92,64,.12); }
+.duty-clock .dc-state{ font-size:16px; opacity:.82; margin-bottom:4px; }
+.duty-clock .dc-timer{ font-size:36px; font-weight:700; letter-spacing:2px; margin:6px 0 14px;
+  font-variant-numeric:tabular-nums; color:#2f5d3a; }
+.duty-btn{ font-family:"Amiri",serif; font-size:19px; font-weight:700; cursor:pointer; border:0;
+  border-radius:4px; padding:11px 36px; color:#f0dcbe; background:#2f5d3a; box-shadow:0 3px 0 rgba(0,0,0,.25); }
+.duty-btn:hover{ filter:brightness(1.07); }
+.duty-btn.off{ background:#8a1c2c; }
+.duty-btn:disabled{ opacity:.5; cursor:default; box-shadow:none; }
+.duty-note{ font-size:13px; opacity:.72; margin-top:11px; }
+/* لوحاتٌ وعناوين */
+.duty-panel{ border:1.5px solid rgba(61,48,43,.5); border-radius:4px;
+  background:rgba(255,252,245,.4); padding:11px 13px; }
+.duty-h{ font-weight:700; font-size:18px; margin-bottom:9px; padding-bottom:6px;
+  border-bottom:1px solid rgba(61,48,43,.25); display:flex; align-items:center; gap:10px; }
+.duty-badge{ font-size:13px; background:#8a1c2c; color:#f0dcbe; border-radius:10px; padding:1px 9px; }
+.duty-badge:empty{ display:none; }
+.duty-list{ display:flex; flex-direction:column; gap:8px; }
+.duty-empty{ opacity:.6; font-size:14px; padding:6px 2px; }
+/* صفُّ جلسة */
+.duty-row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:8px 10px;
+  border:1px solid rgba(61,48,43,.25); border-radius:3px; background:rgba(255,255,255,.35); }
+.duty-row .dr-av{ width:30px; height:30px; border-radius:50%; object-fit:cover; flex:0 0 auto;
+  border:1px solid rgba(61,48,43,.4); background:#e7d8b8; }
+.duty-row .dr-main{ flex:1 1 180px; min-width:0; }
+.duty-row .dr-name{ font-weight:700; font-size:15px; }
+.duty-row .dr-meta{ font-size:12.5px; opacity:.75; }
+.duty-row .dr-note{ font-size:13px; opacity:.9; margin-top:2px; font-style:italic; }
+.duty-hrs{ font-weight:700; font-size:14px; flex:0 0 auto; }
+.duty-chip{ font-size:12.5px; border-radius:10px; padding:2px 10px; white-space:nowrap; flex:0 0 auto;
+  border:1px solid transparent; }
+.duty-chip.s-open{ background:#dff0e2; color:#1f5130; border-color:#2f5d3a; }
+.duty-chip.s-pending{ background:#f4ead0; color:#7a5a1a; border-color:#b08a3b; }
+.duty-chip.s-verified{ background:#e2ecf7; color:#274a70; border-color:#4d78a8; }
+.duty-chip.s-confirmed{ background:#d7ecdc; color:#1a5130; border-color:#2f5d3a; }
+.duty-chip.s-rejected{ background:#f3dcdc; color:#7a1c1c; border-color:#8a1c2c; }
+/* أزرارُ المراجعة */
+.duty-act{ font-family:"Amiri",serif; font-size:13.5px; cursor:pointer; border:0; border-radius:3px;
+  padding:5px 14px; color:#f0dcbe; flex:0 0 auto; }
+.duty-act.ok{ background:#2f5d3a; } .duty-act.no{ background:#8a1c2c; }
+.duty-act:hover{ filter:brightness(1.07); }
+/* لوحةُ النشاط */
+.duty-dashctl{ margin-inline-start:auto; font-size:13px; font-weight:400; display:flex; align-items:center; gap:6px; }
+.duty-dashctl select{ font-family:"Amiri",serif; font-size:13px; }
+.duty-dashwrap{ overflow-x:auto; }
+.duty-dashtbl{ width:100%; border-collapse:collapse; font-size:14px; }
+.duty-dashtbl th,.duty-dashtbl td{ padding:7px 8px; border-bottom:1px solid rgba(61,48,43,.2);
+  text-align:center; white-space:nowrap; }
+.duty-dashtbl th{ font-weight:700; opacity:.8; border-bottom:1.5px solid rgba(61,48,43,.4); }
+.duty-dashtbl td.dd-who{ text-align:start; }
+.duty-dashtbl .dd-whoc{ display:flex; align-items:center; gap:8px; }
+.duty-dashtbl .dd-av{ width:26px; height:26px; border-radius:50%; object-fit:cover;
+  border:1px solid rgba(61,48,43,.4); background:#e7d8b8; }
+.duty-dashtbl .dd-role{ font-size:12px; opacity:.65; }
+.duty-dashtbl tr.me{ background:rgba(120,92,64,.1); }
+.duty-legend{ font-size:12.5px; opacity:.7; margin-top:9px; text-align:center; }
+@media (max-width:640px){ .duty-clock .dc-timer{ font-size:28px; } }
+
 .leaders-head{ font-family:"Amiri",serif; font-weight:700; font-size:20px; color:var(--ink-press);
   text-align:center; letter-spacing:0; opacity:.85; margin:2px 0 20px;
   padding-bottom:9px; border-bottom:1px solid rgba(61,48,43,.22); }
@@ -1591,6 +1660,39 @@ body[data-perms] #permsback{ display:flex; }
     </div>
   </section>
 
+  <!-- ═══ سجل الدوام — إثبات النشاط (مؤقّتٌ + تحقّقٌ من مرحلتين + لوحةٌ أسبوعيّة) ═══ -->
+  <section class="dutyboard" id="dutyboard" aria-label="سجل الدوام">
+    <div class="duty-wrap">
+      <!-- بطاقةُ الساعة — زرٌّ كبير + مؤقّتٌ حيّ -->
+      <div class="duty-clock" id="dutyClock"></div>
+      <!-- دواماتي -->
+      <div class="duty-panel" id="dutyMineWrap">
+        <div class="duty-h">دواماتي الأخيرة</div>
+        <div class="duty-list" id="dutyMine"></div>
+      </div>
+      <!-- (للمُحقِّقين) بانتظار تحقّقي -->
+      <div class="duty-panel duty-rev" id="dutyVerifyWrap" hidden>
+        <div class="duty-h">بانتظار تحقّقي <span class="duty-badge" id="dutyVerifyCt"></span></div>
+        <div class="duty-list" id="dutyVerify"></div>
+      </div>
+      <!-- (للقيادة) بانتظار اعتمادي -->
+      <div class="duty-panel duty-rev" id="dutyConfirmWrap" hidden>
+        <div class="duty-h">بانتظار اعتمادي <span class="duty-badge" id="dutyConfirmCt"></span></div>
+        <div class="duty-list" id="dutyConfirm"></div>
+      </div>
+      <!-- (للمشرفين) لوحة النشاط الأسبوعيّة -->
+      <div class="duty-panel duty-dash" id="dutyDashWrap" hidden>
+        <div class="duty-h">لوحة النشاط الأسبوعيّة
+          <span class="duty-dashctl"><label for="dutyDays">المدّة:</label>
+            <select id="dutyDays"><option value="7">٧ أيّام</option><option value="14">١٤ يوماً</option><option value="30">٣٠ يوماً</option></select>
+          </span>
+        </div>
+        <div class="duty-dashwrap"><table class="duty-dashtbl" id="dutyDash"></table></div>
+        <div class="duty-legend">🟢 نشط · 🟡 ضعيف · 🔴 غائب — «ساعاتٌ مُثبَتة» = دوامٌ تمّ التأكيد عليه فقط</div>
+      </div>
+    </div>
+  </section>
+
   <div class="register-wrap">
     <div class="register-bg"></div>
     <table class="register">
@@ -1952,8 +2054,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     laws: { key:"laws", tab:"كتيب القوانين", kind:"charter" },
     // خارطة الولايات والأقاليم — لوحةٌ خاصّة (kind:map): خريطة Leaflet، لا جدول.
     map:  { key:"map",  tab:"خارطة الولايات والأقاليم", kind:"map" },
+    // سجل الدوام — لوحةٌ خاصّة (kind:duty): مؤقّتٌ + طوابيرُ تحقّق + لوحةُ نشاط، لا جدول.
+    duty: { key:"duty", tab:"سجل الدوام", kind:"duty" },
   };
-  var BOARD_ORDER = ["leadership", "laws", "agents", "cases", "banned", "map"];   // القضايا بعد العملاء، والخارطة آخراً
+  var BOARD_ORDER = ["leadership", "laws", "agents", "cases", "banned", "duty", "map"];   // الدوام قبل الخارطة
   var board = BOARDS.agents;
   function colOf(field){ if(!board.cols) return null; for(var i=0;i<board.cols.length;i++) if(board.cols[i].field===field) return board.cols[i]; return null; }
   function dbCol(field){ var c = colOf(field); return c ? c.col : field; }
@@ -2024,6 +2128,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
       else if(board.kind === "files") loadCases();
       else if(board.kind === "charter") loadCharter();
       else if(board.kind === "map") loadMapBoard();
+      else if(board.kind === "duty") loadDutyBoard();
       flip();
       return;
     }
@@ -2212,7 +2317,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   function pStamps(b){ if(!role) return []; if(curPerms && curPerms[b] && Array.isArray(curPerms[b].stamps)) return curPerms[b].stamps; return myLevel() >= 10 ? ["*"] : []; }
   function pCanStamp(b){ return pStamps(b).length > 0; }
   function pStampCat(b, cat){ var s = pStamps(b); return s.indexOf("*") >= 0 || s.indexOf(cat) >= 0; }
-  async function loadPerms(){ try{ var r = await sb.rpc("my_perms"); if(!r.error && r.data) curPerms = r.data; }catch(e){} }
+  async function loadPerms(){
+    try{ var r = await sb.rpc("my_perms"); if(!r.error && r.data) curPerms = r.data; }catch(e){}
+    try{ var d = await sb.rpc("my_duty_perms"); if(!d.error && d.data){ curPerms = curPerms || {}; curPerms.duty = d.data; } }catch(e){}
+  }
   const canWrite         = () => pEdit(board.key);             // تعديلُ التبويب الحاليّ حسب المحرّك
   const isOwner          = () => role === "owner";
   const canOpenCase      = () => myLevel() >= 10;               // حارس مساعد فأعلى
@@ -2222,6 +2330,176 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   // فئةُ العرض لـ data-role (تُبقي CSS الحاليّ يعمل): مالك/محرّر/قارئ حسب المستوى.
   function tierOf(r){ if(r === "owner") return "owner"; return rankLevel(r) >= 10 ? "editor" : "reader"; }
   function displayName(u){ var m = (u && u.user_metadata) || {}; return m.full_name || m.name || m.user_name || m.email || ""; }
+
+  // ── سجل الدوام (kind:duty) — إثبات النشاط: مؤقّتٌ + تحقّقٌ من مرحلتين + لوحةٌ أسبوعيّة ──
+  var dutyTimer = null, dutyLiveWired = false, dutyOpenId = null, dutyOpenStart = 0, dutyDays = 7, dutyBusy = false;
+  // صلاحيّاتي في الدوام (تُحلّ من الخادم في my_duty_perms؛ وإلا الأرضيّة)
+  function pLogDuty(){     if(!role) return false; if(curPerms && curPerms.duty && typeof curPerms.duty.log     === "boolean") return curPerms.duty.log;     return myLevel() >= 10; }
+  function pVerifyDuty(){  if(!role) return false; if(curPerms && curPerms.duty && typeof curPerms.duty.verify  === "boolean") return curPerms.duty.verify;  return myLevel() >= 80; }
+  function pConfirmDuty(){ if(!role) return false; if(curPerms && curPerms.duty && typeof curPerms.duty.confirm === "boolean") return curPerms.duty.confirm; return myLevel() >= 100; }
+
+  var DUTY_ST = {
+    open:      { lbl:"على الدوام الآن",                  cls:"s-open" },
+    pending:   { lbl:"بانتظار التحقّق",                  cls:"s-pending" },
+    verified:  { lbl:"وافق المُحقِّق — بانتظار الاعتماد", cls:"s-verified" },
+    confirmed: { lbl:"تمّ التأكيد ✔",                    cls:"s-confirmed" },
+    rejected:  { lbl:"مرفوض",                            cls:"s-rejected" },
+  };
+  function arD(n){ return String(n).replace(/[0-9]/g, function(d){ return "٠١٢٣٤٥٦٧٨٩".charAt(+d); }); }
+  function ar2(n){ n = String(n); if(n.length < 2) n = "0" + n; return arD(n); }
+  function fmtClock(ms){ var s = Math.max(0, Math.floor(ms/1000)); return arD(Math.floor(s/3600)) + ":" + ar2(Math.floor((s%3600)/60)) + ":" + ar2(s%60); }
+  function fmtDur(ms){ var mins = Math.max(0, Math.round(ms/60000)), h = Math.floor(mins/60), m = mins%60; return (h ? arD(h) + " س " : "") + arD(m) + " د"; }
+  function fmtWhen(ts){ try{ return new Date(ts).toLocaleString("ar-EG", { month:"numeric", day:"numeric", hour:"2-digit", minute:"2-digit" }); }catch(e){ return ""; } }
+  function stopDutyTimer(){ if(dutyTimer){ clearInterval(dutyTimer); dutyTimer = null; } }
+
+  async function loadDutyBoard(){
+    if(!$("dutyClock")) return;
+    if(!dutyLiveWired){ dutyLiveWired = true;
+      try{ sb.channel("duty-live").on("postgres_changes", { event:"*", schema:"public", table:"duty_sessions" }, function(){
+        if(document.body.getAttribute("data-view") === "duty") loadDutyBoard(); }).subscribe(); }catch(e){}
+      var sel = $("dutyDays"); if(sel) sel.addEventListener("change", function(){ dutyDays = +sel.value || 7; loadDutyDash(); });
+    }
+    await loadDutyMine();
+    var vW = $("dutyVerifyWrap"), cW = $("dutyConfirmWrap"), dW = $("dutyDashWrap");
+    if(vW) vW.hidden = !pVerifyDuty();
+    if(cW) cW.hidden = !pConfirmDuty();
+    if(dW) dW.hidden = !(pVerifyDuty() || pConfirmDuty());
+    if(pVerifyDuty())  loadDutyQueue("pending",  "dutyVerify",  "dutyVerifyCt");
+    if(pConfirmDuty()) loadDutyQueue("verified", "dutyConfirm", "dutyConfirmCt");
+    if(pVerifyDuty() || pConfirmDuty()) loadDutyDash();
+  }
+
+  async function loadDutyMine(){
+    var clock = $("dutyClock"), mine = $("dutyMine"); if(!clock) return;
+    if(!pLogDuty()){
+      stopDutyTimer();
+      clock.innerHTML = '<div class="dc-state">الدوامُ للموظّفين المعتمَدين (حارس مساعد فأعلى).</div>';
+      if(mine) mine.innerHTML = '<div class="duty-empty">—</div>'; return;
+    }
+    var r = await sb.from("duty_sessions").select("*").eq("user_id", uid).order("id", { ascending:false }).limit(20);
+    if(r.error){ toast("تعذّر جلب الدوام: " + r.error.message, true); return; }
+    var rows = r.data || [], open = rows.filter(function(x){ return x.status === "open"; })[0] || null;
+    renderDutyClock(open);
+    renderDutyMine(rows);
+  }
+
+  function renderDutyClock(open){
+    var clock = $("dutyClock"); if(!clock) return;
+    stopDutyTimer();
+    if(open){
+      dutyOpenId = open.id; dutyOpenStart = new Date(open.started_at).getTime();
+      clock.innerHTML =
+        '<div class="dc-state">أنت على الدوام منذ ' + esc(fmtWhen(open.started_at)) + '</div>' +
+        '<div class="dc-timer" id="dcTimer">٠:٠٠:٠٠</div>' +
+        '<button class="duty-btn off" id="dutyToggle">إنهاء الدوام</button>';
+      var tick = function(){
+        if(document.body.getAttribute("data-view") !== "duty"){ stopDutyTimer(); return; }
+        var el = $("dcTimer"); if(!el){ stopDutyTimer(); return; }
+        el.textContent = fmtClock(Date.now() - dutyOpenStart); };
+      tick(); dutyTimer = setInterval(tick, 1000);
+      $("dutyToggle").addEventListener("click", endDuty);
+    }else{
+      dutyOpenId = null;
+      clock.innerHTML =
+        '<div class="dc-state">لست على الدوام حاليّاً</div>' +
+        '<button class="duty-btn" id="dutyToggle">بدء الدوام</button>' +
+        '<div class="duty-note">اضغط عند بدء عملك، وأنهِه عند انتهائك — تُسجَّل ساعاتُك ثمّ تُراجَع للتأكيد.</div>';
+      $("dutyToggle").addEventListener("click", startDuty);
+    }
+  }
+
+  async function startDuty(){
+    if(dutyBusy) return; dutyBusy = true;
+    var b = $("dutyToggle"); if(b) b.disabled = true;
+    var r = await sb.from("duty_sessions").insert({ note:null }).select().single();
+    dutyBusy = false;
+    if(r.error){ toast(/duplicate|unique/i.test(r.error.message || "") ? "أنت على الدوام بالفعل" : ("تعذّر البدء: " + r.error.message), true); loadDutyMine(); return; }
+    toast("بدأ دوامُك — بالتوفيق");
+    loadDutyMine();
+  }
+  async function endDuty(){
+    if(dutyBusy || !dutyOpenId) return;
+    var note = prompt("أنهِ الدوام. اكتب سطراً عمّا أنجزتَه (اختياريّ):", "");
+    if(note === null) return;                        // ألغى
+    dutyBusy = true; var b = $("dutyToggle"); if(b) b.disabled = true;
+    var upd = { status:"pending" }; note = (note || "").trim(); if(note) upd.note = note.slice(0, 500);
+    var r = await sb.from("duty_sessions").update(upd).eq("id", dutyOpenId);
+    dutyBusy = false;
+    if(r.error){ toast("تعذّر الإنهاء: " + r.error.message, true); loadDutyMine(); return; }
+    stopDutyTimer(); toast("أُنهيَ الدوام — بانتظار التحقّق");
+    loadDutyMine();
+  }
+
+  function renderDutyMine(rows){
+    var mine = $("dutyMine"); if(!mine) return;
+    var ended = rows.filter(function(x){ return x.status !== "open"; });
+    if(!ended.length){ mine.innerHTML = '<div class="duty-empty">لا دوامات بعد.</div>'; return; }
+    mine.innerHTML = ended.map(function(x){
+      var st = DUTY_ST[x.status] || { lbl:x.status, cls:"" };
+      var dur = x.ended_at ? fmtDur(new Date(x.ended_at) - new Date(x.started_at)) : "—";
+      var meta = fmtWhen(x.started_at) + (x.ended_at ? " — " + fmtWhen(x.ended_at) : "");
+      var note = x.note ? '<div class="dr-note">« ' + esc(x.note) + ' »</div>' : "";
+      var rej  = (x.status === "rejected" && x.decided_note) ? '<div class="dr-note">سبب الرفض: ' + esc(x.decided_note) + '</div>' : "";
+      return '<div class="duty-row"><div class="dr-main"><div class="dr-meta">' + esc(meta) + '</div>' + note + rej + '</div>' +
+        '<div class="duty-hrs">' + dur + '</div><span class="duty-chip ' + st.cls + '">' + st.lbl + '</span></div>';
+    }).join("");
+  }
+
+  async function loadDutyQueue(want, listId, ctId){
+    var list = $(listId); if(!list) return;
+    var r = await sb.rpc("duty_review_list", { want: want });
+    if(r.error){ list.innerHTML = '<div class="duty-empty">تعذّر الجلب</div>'; return; }
+    var rows = r.data || [], ct = $(ctId); if(ct) ct.textContent = rows.length ? arD(rows.length) : "";
+    if(!rows.length){ list.innerHTML = '<div class="duty-empty">لا شيء بانتظارك.</div>'; return; }
+    var toStatus = (want === "pending") ? "verified" : "confirmed";
+    var okLbl = (want === "pending") ? "تحقّق ✔" : "اعتماد ✔";
+    list.innerHTML = rows.map(function(x){
+      var nm = esc(x.display_name || x.username || "عضو");
+      var av = x.avatar_url ? '<img class="dr-av" src="' + esc(x.avatar_url) + '" alt="" referrerpolicy="no-referrer">' : '<img class="dr-av" alt="">';
+      var dur = x.ended_at ? fmtDur(new Date(x.ended_at) - new Date(x.started_at)) : "—";
+      var meta = fmtWhen(x.started_at) + (x.ended_at ? " — " + fmtWhen(x.ended_at) : "");
+      var note = x.note ? '<div class="dr-note">« ' + esc(x.note) + ' »</div>' : "";
+      return '<div class="duty-row">' + av + '<div class="dr-main"><div class="dr-name">' + nm + '</div><div class="dr-meta">' + esc(meta) + '</div>' + note + '</div>' +
+        '<div class="duty-hrs">' + dur + '</div>' +
+        '<button class="duty-act ok" data-duty-ok="' + x.id + '" data-to="' + toStatus + '">' + okLbl + '</button>' +
+        '<button class="duty-act no" data-duty-no="' + x.id + '">رفض ✕</button></div>';
+    }).join("");
+    Array.prototype.forEach.call(list.querySelectorAll("[data-duty-ok]"), function(b){
+      b.addEventListener("click", function(){ dutyDecide(+b.dataset.dutyOk, b.dataset.to, null); }); });
+    Array.prototype.forEach.call(list.querySelectorAll("[data-duty-no]"), function(b){
+      b.addEventListener("click", function(){ var why = prompt("سبب الرفض (اختياريّ):", ""); if(why === null) return; dutyDecide(+b.dataset.dutyNo, "rejected", (why || "").trim()); }); });
+  }
+  async function dutyDecide(id, to, reason){
+    var upd = { status: to }; if(to === "rejected") upd.decided_note = (reason || "").slice(0, 500) || null;
+    var r = await sb.from("duty_sessions").update(upd).eq("id", id);
+    if(r.error){ toast("تعذّر: " + r.error.message, true); return; }
+    toast(to === "verified" ? "تمّ التحقّق" : to === "confirmed" ? "تمّ الاعتماد" : "رُفض");
+    loadDutyBoard();
+  }
+
+  async function loadDutyDash(){
+    var tbl = $("dutyDash"); if(!tbl) return;
+    var r = await sb.rpc("activity_dashboard", { days: dutyDays });
+    var head = '<thead><tr><th class="dd-who">العضو</th><th>الحالة</th><th>ساعاتٌ مُثبَتة</th><th>بانتظار</th><th>قضايا</th><th>علامات</th><th>آخر نشاط</th></tr></thead>';
+    if(r.error){ tbl.innerHTML = head + '<tbody><tr><td colspan="7" class="duty-empty">تعذّر الجلب</td></tr></tbody>'; return; }
+    var rows = r.data || [];
+    if(!rows.length){ tbl.innerHTML = head + '<tbody><tr><td colspan="7" class="duty-empty">لا بيانات.</td></tr></tbody>'; return; }
+    var need = (dutyDays / 7) * 5;                    // 🟢 ≈ ٥ ساعاتٍ مُثبَتة لكلّ أسبوع
+    tbl.innerHTML = head + '<tbody>' + rows.map(function(x){
+      var ch = Number(x.confirmed_hours) || 0, ph = Number(x.pending_hours) || 0, dot, lbl;
+      if(x.open_now){ dot = "🟢"; lbl = "على الدوام"; }
+      else if(ch >= need){ dot = "🟢"; lbl = "نشط"; }
+      else if(ch > 0 || ph > 0 || x.cases_opened > 0 || x.markers_added > 0){ dot = "🟡"; lbl = "ضعيف"; }
+      else{ dot = "🔴"; lbl = "غائب"; }
+      var nm = esc(x.display_name || x.username || "عضو");
+      var av = x.avatar_url ? '<img class="dd-av" src="' + esc(x.avatar_url) + '" alt="" referrerpolicy="no-referrer">' : '<img class="dd-av" alt="">';
+      var last = x.last_active ? esc(fmtWhen(x.last_active)) : "—";
+      return '<tr' + (x.user_id === uid ? ' class="me"' : '') + '>' +
+        '<td class="dd-who"><div class="dd-whoc">' + av + '<span>' + nm + '<div class="dd-role">' + esc(rankLabel(x.role)) + '</div></span></div></td>' +
+        '<td>' + dot + ' ' + lbl + '</td><td>' + arD(ch.toFixed(1)) + '</td><td>' + arD(ph.toFixed(1)) + '</td>' +
+        '<td>' + arD(x.cases_opened || 0) + '</td><td>' + arD(x.markers_added || 0) + '</td><td>' + last + '</td></tr>';
+    }).join("") + '</tbody>';
+  }
 
   // ── المصادقة ───────────────────────────────────────────────────────────────
   async function boot(){
@@ -2296,6 +2574,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
       else if(board.kind === "files") loadCases();
       else if(board.kind === "charter") loadCharter();
       else if(board.kind === "map") loadMapBoard();
+      else if(board.kind === "duty") loadDutyBoard();
     }else{                                 // لوحةٌ جدوليّة (سجل العملاء/القائمة السوداء)
       buildThead();
       await render();
@@ -3776,6 +4055,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     { key:"charter",  label:"كتيب القوانين",        del:false, st:false },
     { key:"featured", label:"موظف الأسبوع",         del:false, st:true  },
     { key:"map",      label:"خارطة الولايات والأقاليم", del:false, st:false }, // تعديل = وضع/حذف علامات
+    { key:"duty",     label:"سجل الدوام — التحقّق",  acts:[   // صلاحيّاتٌ خاصّة بدل تعديل/حذف
+      { k:"verify",  label:"يُحقِّق (مرحلة ١)",  fb:80  },
+      { k:"confirm", label:"يعتمد (مرحلة ٢)", fb:100 } ] },
   ];
   var STAMP_CATS = [
     { key:"functional", label:"وظيفيّة" }, { key:"ranks", label:"رتب" },
@@ -3789,11 +4071,11 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   var permsEditing = null;                 // { type:'rank'|'person', id, label, rankKey }
 
   function fbEdit(rk){ return rankLevel(rk) >= 10; }        // الأصل: محرّرٌ = مستوى ≥ ١٠
-  function effVal(explicit, rankKey, b, act){
+  function effVal(explicit, rankKey, b, act, floor){
     if(explicit && explicit[b] && typeof explicit[b][act] === "boolean") return explicit[b][act];
     if(permsEditing.type === "person"){ var rp = rankPermsCache[rankKey];
       if(rp && rp[b] && typeof rp[b][act] === "boolean") return rp[b][act]; }
-    return fbEdit(rankKey);
+    return rankLevel(rankKey) >= (floor || 10);          // الأرضيّة: عادةً محرّرٌ (≥١٠)، وللدوام ٨٠/١٠٠
   }
   function effStamps(explicit, rankKey, b){
     if(explicit && explicit[b] && Array.isArray(explicit[b].stamps)) return explicit[b].stamps;
@@ -3813,6 +4095,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
       var nm = document.createElement("div"); nm.className = "perm-bname"; nm.textContent = b.label; row.appendChild(nm);
       var cells = document.createElement("div"); cells.className = "perm-cells";
       var acts = document.createElement("div"); acts.className = "perm-acts";
+      if(b.acts){                                        // لوحةٌ بصلاحيّاتٍ خاصّة (الدوام) — لا تعديل/حذف/أختام
+        b.acts.forEach(function(a){ acts.appendChild(permChk(a.k + ":" + b.key, a.label, effVal(explicit, rk, b.key, a.k, a.fb))); });
+        cells.appendChild(acts); row.appendChild(cells); permsGrid.appendChild(row); return;
+      }
       acts.appendChild(permChk("edit:" + b.key, "تعديل", effVal(explicit, rk, b.key, "edit")));
       if(b.del) acts.appendChild(permChk("del:" + b.key, "حذف", effVal(explicit, rk, b.key, "del")));
       cells.appendChild(acts);
@@ -3829,7 +4115,12 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
   function collectPerms(){
     var out = {};
     PERM_BOARDS.forEach(function(b){
-      var o = {}, e = permsGrid.querySelector('input[data-k="edit:' + b.key + '"]'); o.edit = !!(e && e.checked);
+      var o = {};
+      if(b.acts){                                        // لوحةٌ بصلاحيّاتٍ خاصّة (الدوام)
+        b.acts.forEach(function(a){ var e = permsGrid.querySelector('input[data-k="' + a.k + ':' + b.key + '"]'); o[a.k] = !!(e && e.checked); });
+        out[b.key] = o; return;
+      }
+      var e = permsGrid.querySelector('input[data-k="edit:' + b.key + '"]'); o.edit = !!(e && e.checked);
       if(b.del){ var d = permsGrid.querySelector('input[data-k="del:' + b.key + '"]'); o.del = !!(d && d.checked); }
       if(b.st){ var arr = []; STAMP_CATS.forEach(function(c){
         var s = permsGrid.querySelector('input[data-k="stamp:' + b.key + ':' + c.key + '"]'); if(s && s.checked) arr.push(c.key); }); o.stamps = arr; }
