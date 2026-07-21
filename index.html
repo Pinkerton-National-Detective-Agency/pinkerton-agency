@@ -3062,7 +3062,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     return true;
   }
   async function addCase(){
-    if(!canWrite()) return;
+    if(!pEdit("cases")) return;                          // صلاحيّةُ القضايا تحديداً (لا التبويب الحاليّ)
     var res = await sb.from("cases").insert({ status:"مفتوح" }).select().single();
     if(res.error){ toast("تعذّر فتح الملف: " + res.error.message, true); return; }
     openCaseId = res.data.id;
@@ -3284,8 +3284,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.6";
     if(!casesEl) return;
     loadCases();
     if(casesWired) return; casesWired = true;
-    if(caseAddEl && canWrite()) caseAddEl.addEventListener("click", addCase);
-    if(canWrite() && caseFileEl){
+    // نربط دائماً (يُنفَّذ مرّةً عند الإقلاع والتبويبُ = سجل العملاء، فلا نقيسه بصلاحيّة السجلّ الحاليّ).
+    // الحمايةُ باقية: الزرُّ مخفيٌّ لغير المخوَّل (CSS حسب صلاحيّة القضايا)، وحارسُ addCase، وRLS.
+    if(caseAddEl) caseAddEl.addEventListener("click", addCase);
+    if(caseFileEl){
       caseFileEl.addEventListener("change", function(){
         var f = caseFileEl.files && caseFileEl.files[0];
         if(!f || !caseUpload){ caseFileEl.value = ""; return; }
